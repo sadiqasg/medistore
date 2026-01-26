@@ -3,19 +3,14 @@ import { cn } from '@/lib/utils';
 import { mockExpenses, formatCurrency, type Expense } from '@/lib/mockData';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { NewExpenseDialog } from './NewExpenseDialog';
 import {
   Check,
   X,
@@ -29,21 +24,24 @@ import {
   Wrench,
   ShoppingBag,
   MoreVertical,
+  Landmark,
 } from 'lucide-react';
 
-const categoryIcons = {
+const categoryIcons: Record<string, typeof Zap> = {
   utilities: Zap,
   transport: Truck,
   maintenance: Wrench,
   supplies: ShoppingBag,
+  tax: Landmark,
   other: MoreVertical,
 };
 
-const categoryColors = {
+const categoryColors: Record<string, string> = {
   utilities: 'bg-chart-3/10 text-chart-3',
   transport: 'bg-chart-1/10 text-chart-1',
   maintenance: 'bg-chart-4/10 text-chart-4',
   supplies: 'bg-chart-2/10 text-chart-2',
+  tax: 'bg-chart-5/10 text-chart-5',
   other: 'bg-muted text-muted-foreground',
 };
 
@@ -74,6 +72,7 @@ interface ExpensesListProps {
 
 export function ExpensesList({ filter = 'all' }: ExpensesListProps) {
   const [expenses] = useState(mockExpenses);
+  const [showNewExpense, setShowNewExpense] = useState(false);
 
   const filteredExpenses =
     filter === 'all'
@@ -100,7 +99,7 @@ export function ExpensesList({ filter = 'all' }: ExpensesListProps) {
             {filter !== 'all' && `(${filter})`}
           </p>
         </div>
-        <Button size="sm">
+        <Button size="sm" onClick={() => setShowNewExpense(true)}>
           <Plus className="mr-2 h-4 w-4" />
           New Expense
         </Button>
@@ -109,7 +108,7 @@ export function ExpensesList({ filter = 'all' }: ExpensesListProps) {
       {/* Expense cards */}
       <div className="space-y-3">
         {filteredExpenses.map((expense, index) => {
-          const CategoryIcon = categoryIcons[expense.category];
+          const CategoryIcon = categoryIcons[expense.category] || MoreVertical;
           const status = statusConfig[expense.status];
           const StatusIcon = status.icon;
 
@@ -128,7 +127,7 @@ export function ExpensesList({ filter = 'all' }: ExpensesListProps) {
                   <div
                     className={cn(
                       'flex h-11 w-11 shrink-0 items-center justify-center rounded-lg',
-                      categoryColors[expense.category]
+                      categoryColors[expense.category] || categoryColors.other
                     )}
                   >
                     <CategoryIcon className="h-5 w-5" />
@@ -142,10 +141,15 @@ export function ExpensesList({ filter = 'all' }: ExpensesListProps) {
                         <p className="text-sm text-muted-foreground capitalize">
                           {expense.category} • {formatDate(expense.submittedAt)}
                         </p>
+                        {expense.items.length > 1 && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {expense.items.length} items
+                          </p>
+                        )}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <span className="text-lg font-semibold font-mono tabular-nums">
-                          {formatCurrency(expense.amount)}
+                          {formatCurrency(expense.totalAmount)}
                         </span>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -220,6 +224,8 @@ export function ExpensesList({ filter = 'all' }: ExpensesListProps) {
           </CardContent>
         </Card>
       )}
+
+      <NewExpenseDialog open={showNewExpense} onOpenChange={setShowNewExpense} />
     </div>
   );
 }

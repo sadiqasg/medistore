@@ -6,115 +6,115 @@
 
 @layer base {
   :root {
-    /* MEDIS Corporate Design System */
-    --background: 210 20% 98%;
-    --foreground: 222 47% 11%;
+    /* MEDIS Warm Design System - Beige/Brown Tones */
+    --background: 40 30% 97%;
+    --foreground: 30 20% 12%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card: 40 40% 99%;
+    --card-foreground: 30 20% 12%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover: 40 40% 99%;
+    --popover-foreground: 30 20% 12%;
 
-    /* Navy primary - corporate trust */
-    --primary: 222 47% 20%;
-    --primary-foreground: 210 40% 98%;
+    /* Warm brown primary - earthy trust */
+    --primary: 30 35% 28%;
+    --primary-foreground: 40 30% 97%;
 
-    --secondary: 215 20% 94%;
-    --secondary-foreground: 222 47% 20%;
+    --secondary: 35 25% 92%;
+    --secondary-foreground: 30 35% 28%;
 
-    --muted: 215 20% 94%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 35 20% 92%;
+    --muted-foreground: 30 15% 45%;
 
-    --accent: 215 20% 90%;
-    --accent-foreground: 222 47% 11%;
+    --accent: 35 25% 88%;
+    --accent-foreground: 30 20% 12%;
 
-    /* Coca-Cola inspired red for alerts/accents */
-    --destructive: 4 84% 44%;
+    /* Warm red for alerts */
+    --destructive: 8 72% 48%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Status colors */
-    --success: 142 71% 35%;
+    /* Status colors - warmer tones */
+    --success: 145 55% 38%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 10%;
-    --danger: 4 84% 44%;
+    --warning: 35 85% 50%;
+    --warning-foreground: 30 20% 12%;
+    --danger: 8 72% 48%;
     --danger-foreground: 0 0% 100%;
 
-    /* Metric accent - teal for positive trends */
-    --metric-positive: 160 60% 42%;
-    --metric-negative: 4 84% 50%;
-    --metric-neutral: 215 16% 47%;
+    /* Metric accents */
+    --metric-positive: 145 55% 42%;
+    --metric-negative: 8 72% 50%;
+    --metric-neutral: 30 15% 50%;
 
-    --border: 214 20% 88%;
-    --input: 214 20% 88%;
-    --ring: 222 47% 20%;
+    --border: 35 20% 85%;
+    --input: 35 20% 85%;
+    --ring: 30 35% 35%;
 
-    --radius: 0.5rem;
+    --radius: 0.625rem;
 
-    /* Chart colors */
-    --chart-1: 222 47% 35%;
-    --chart-2: 160 60% 42%;
-    --chart-3: 38 92% 50%;
-    --chart-4: 4 84% 44%;
-    --chart-5: 280 60% 50%;
+    /* Chart colors - warm palette */
+    --chart-1: 30 40% 35%;
+    --chart-2: 145 55% 42%;
+    --chart-3: 35 85% 50%;
+    --chart-4: 8 72% 50%;
+    --chart-5: 320 50% 45%;
 
-    /* Sidebar */
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 215 20% 75%;
-    --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 222 47% 11%;
-    --sidebar-accent: 222 47% 18%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 222 30% 20%;
-    --sidebar-ring: 217 91% 60%;
-    --sidebar-muted: 215 16% 55%;
+    /* Sidebar - warm dark brown */
+    --sidebar-background: 30 25% 12%;
+    --sidebar-foreground: 35 20% 70%;
+    --sidebar-primary: 40 30% 97%;
+    --sidebar-primary-foreground: 30 25% 12%;
+    --sidebar-accent: 30 25% 18%;
+    --sidebar-accent-foreground: 40 30% 97%;
+    --sidebar-border: 30 20% 20%;
+    --sidebar-ring: 35 60% 55%;
+    --sidebar-muted: 35 15% 55%;
   }
 
   .dark {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 96%;
+    --background: 30 20% 7%;
+    --foreground: 40 20% 95%;
 
-    --card: 222 47% 9%;
-    --card-foreground: 210 40% 96%;
+    --card: 30 20% 10%;
+    --card-foreground: 40 20% 95%;
 
-    --popover: 222 47% 9%;
-    --popover-foreground: 210 40% 96%;
+    --popover: 30 20% 10%;
+    --popover-foreground: 40 20% 95%;
 
-    --primary: 210 40% 96%;
-    --primary-foreground: 222 47% 11%;
+    --primary: 40 25% 88%;
+    --primary-foreground: 30 20% 10%;
 
-    --secondary: 222 30% 18%;
-    --secondary-foreground: 210 40% 96%;
+    --secondary: 30 18% 16%;
+    --secondary-foreground: 40 20% 95%;
 
-    --muted: 222 30% 18%;
-    --muted-foreground: 215 20% 60%;
+    --muted: 30 18% 16%;
+    --muted-foreground: 35 15% 60%;
 
-    --accent: 222 30% 18%;
-    --accent-foreground: 210 40% 96%;
+    --accent: 30 18% 18%;
+    --accent-foreground: 40 20% 95%;
 
-    --destructive: 4 84% 50%;
+    --destructive: 8 72% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 142 71% 45%;
-    --warning: 38 92% 55%;
-    --danger: 4 84% 50%;
+    --success: 145 55% 48%;
+    --warning: 35 85% 55%;
+    --danger: 8 72% 55%;
 
-    --metric-positive: 160 60% 50%;
-    --metric-negative: 4 84% 55%;
-    --metric-neutral: 215 20% 60%;
+    --metric-positive: 145 55% 52%;
+    --metric-negative: 8 72% 58%;
+    --metric-neutral: 35 15% 60%;
 
-    --border: 222 30% 20%;
-    --input: 222 30% 20%;
-    --ring: 210 40% 80%;
+    --border: 30 18% 20%;
+    --input: 30 18% 20%;
+    --ring: 40 25% 80%;
 
-    --sidebar-background: 222 47% 6%;
-    --sidebar-foreground: 215 20% 70%;
-    --sidebar-primary: 210 40% 96%;
-    --sidebar-primary-foreground: 222 47% 11%;
-    --sidebar-accent: 222 47% 12%;
-    --sidebar-accent-foreground: 210 40% 96%;
-    --sidebar-border: 222 30% 15%;
+    --sidebar-background: 30 25% 6%;
+    --sidebar-foreground: 35 18% 68%;
+    --sidebar-primary: 40 20% 95%;
+    --sidebar-primary-foreground: 30 25% 10%;
+    --sidebar-accent: 30 22% 12%;
+    --sidebar-accent-foreground: 40 20% 95%;
+    --sidebar-border: 30 18% 15%;
   }
 }
 
@@ -135,15 +135,19 @@
 }
 
 @layer components {
-  /* Metric card glow effects */
+  /* Metric card styling */
   .metric-card {
-    @apply relative overflow-hidden;
+    @apply relative overflow-hidden rounded-xl border border-border bg-card p-5 shadow-sm transition-all duration-200;
   }
   
+  .metric-card:hover {
+    @apply shadow-md border-border/80;
+  }
+
   .metric-card::before {
     content: '';
     @apply absolute inset-0 opacity-0 transition-opacity duration-300;
-    background: linear-gradient(135deg, hsl(var(--primary) / 0.05) 0%, transparent 50%);
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.03) 0%, transparent 50%);
   }
   
   .metric-card:hover::before {
@@ -189,6 +193,16 @@
   
   .sparkline-negative {
     stroke: hsl(var(--metric-negative));
+  }
+
+  /* Card variants */
+  .card-elevated {
+    @apply bg-card border border-border rounded-xl shadow-sm;
+  }
+
+  /* Table styling */
+  .table-container {
+    @apply rounded-xl border border-border bg-card overflow-hidden;
   }
 }
 

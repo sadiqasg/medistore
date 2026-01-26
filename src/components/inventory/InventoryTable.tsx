@@ -4,19 +4,13 @@ import {
   mockInventory,
   formatCurrency,
   getStockStatus,
+  getProductDisplayName,
   type InventoryItem,
 } from '@/lib/mockData';
 import { Sparkline } from '@/components/dashboard/Sparkline';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -27,20 +21,19 @@ import {
 } from '@/components/ui/table';
 import {
   Search,
-  Filter,
   Download,
   Plus,
   ArrowUpDown,
   AlertTriangle,
   Package,
+  XCircle,
 } from 'lucide-react';
 
-type SortField = 'name' | 'currentStock' | 'unitPrice' | 'category';
+type SortField = 'name' | 'currentStock' | 'unitPrice' | 'size';
 type SortOrder = 'asc' | 'desc';
 
 export function InventoryTable() {
   const [search, setSearch] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
@@ -53,13 +46,9 @@ export function InventoryTable() {
       items = items.filter(
         (item) =>
           item.name.toLowerCase().includes(searchLower) ||
-          item.sku.toLowerCase().includes(searchLower)
+          item.sku.toLowerCase().includes(searchLower) ||
+          item.size.toLowerCase().includes(searchLower)
       );
-    }
-
-    // Filter by category
-    if (categoryFilter !== 'all') {
-      items = items.filter((item) => item.category === categoryFilter);
     }
 
     // Sort
@@ -75,15 +64,15 @@ export function InventoryTable() {
         case 'unitPrice':
           comparison = a.unitPrice - b.unitPrice;
           break;
-        case 'category':
-          comparison = a.category.localeCompare(b.category);
+        case 'size':
+          comparison = a.size.localeCompare(b.size);
           break;
       }
       return sortOrder === 'asc' ? comparison : -comparison;
     });
 
     return items;
-  }, [search, categoryFilter, sortField, sortOrder]);
+  }, [search, sortField, sortOrder]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -97,11 +86,18 @@ export function InventoryTable() {
   const getStockBadge = (item: InventoryItem) => {
     const status = getStockStatus(item.currentStock, item.minStock, item.maxStock);
     switch (status) {
-      case 'low':
+      case 'out':
         return (
           <Badge variant="destructive" className="gap-1">
+            <XCircle className="h-3 w-3" />
+            Out of Stock
+          </Badge>
+        );
+      case 'low':
+        return (
+          <Badge variant="outline" className="gap-1 border-warning text-warning">
             <AlertTriangle className="h-3 w-3" />
-            Low
+            Low Stock
           </Badge>
         );
       case 'high':
@@ -119,25 +115,12 @@ export function InventoryTable() {
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search by name or SKU..."
+              placeholder="Search by name, SKU, or size..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
             />
           </div>
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-[140px]">
-              <Filter className="mr-2 h-4 w-4" />
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Items</SelectItem>
-              <SelectItem value="beverages">Beverages</SelectItem>
-              <SelectItem value="snacks">Snacks</SelectItem>
-              <SelectItem value="supplies">Supplies</SelectItem>
-              <SelectItem value="merchandise">Merchandise</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm">
@@ -146,13 +129,13 @@ export function InventoryTable() {
           </Button>
           <Button size="sm">
             <Plus className="mr-2 h-4 w-4" />
-            Add Item
+            Add Inventory
           </Button>
         </div>
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+      <div className="table-container">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50 hover:bg-muted/50">
@@ -168,9 +151,9 @@ export function InventoryTable() {
               <TableHead>
                 <button
                   className="flex items-center gap-1 hover:text-foreground transition-colors"
-                  onClick={() => handleSort('category')}
+                  onClick={() => handleSort('size')}
                 >
-                  Category
+                  Size
                   <ArrowUpDown className="h-3.5 w-3.5" />
                 </button>
               </TableHead>
@@ -179,7 +162,7 @@ export function InventoryTable() {
                   className="flex items-center gap-1 ml-auto hover:text-foreground transition-colors"
                   onClick={() => handleSort('currentStock')}
                 >
-                  Stock
+                  Crates
                   <ArrowUpDown className="h-3.5 w-3.5" />
                 </button>
               </TableHead>
@@ -190,24 +173,33 @@ export function InventoryTable() {
                   className="flex items-center gap-1 ml-auto hover:text-foreground transition-colors"
                   onClick={() => handleSort('unitPrice')}
                 >
-                  Price
+                  Price/Bottle
                   <ArrowUpDown className="h-3.5 w-3.5" />
                 </button>
               </TableHead>
-              <TableHead className="text-right">Crates Out</TableHead>
+              <TableHead className="text-right">Crates Outstanding</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredAndSorted.map((item, index) => (
               <TableRow
                 key={item.id}
-                className="data-row animate-fade-in"
+                className={cn(
+                  'data-row animate-fade-in',
+                  item.isOutOfStock && 'opacity-60'
+                )}
                 style={{ animationDelay: `${index * 30}ms` }}
               >
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                      <Package className="h-5 w-5 text-primary" />
+                    <div className={cn(
+                      'flex h-10 w-10 items-center justify-center rounded-lg',
+                      item.isOutOfStock ? 'bg-muted' : 'bg-primary/10'
+                    )}>
+                      <Package className={cn(
+                        'h-5 w-5',
+                        item.isOutOfStock ? 'text-muted-foreground' : 'text-primary'
+                      )} />
                     </div>
                     <div>
                       <p className="font-medium">{item.name}</p>
@@ -218,10 +210,13 @@ export function InventoryTable() {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <span className="capitalize text-sm">{item.category}</span>
+                  <span className="text-sm">{item.size}</span>
                 </TableCell>
                 <TableCell className="text-right">
-                  <span className="font-mono tabular-nums font-medium">
+                  <span className={cn(
+                    'font-mono tabular-nums font-medium',
+                    item.currentStock === 0 && 'text-destructive'
+                  )}>
                     {item.currentStock}
                   </span>
                   <span className="text-muted-foreground text-xs ml-1">
@@ -238,7 +233,10 @@ export function InventoryTable() {
                   {formatCurrency(item.unitPrice)}
                 </TableCell>
                 <TableCell className="text-right">
-                  <span className="font-mono tabular-nums text-warning">
+                  <span className={cn(
+                    'font-mono tabular-nums',
+                    (item.cratesOut - item.cratesReturned) > 0 ? 'text-warning' : 'text-muted-foreground'
+                  )}>
                     {item.cratesOut - item.cratesReturned}
                   </span>
                 </TableCell>
@@ -251,7 +249,7 @@ export function InventoryTable() {
           <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
             <Package className="h-12 w-12 mb-3 opacity-50" />
             <p className="font-medium">No items found</p>
-            <p className="text-sm">Try adjusting your search or filters</p>
+            <p className="text-sm">Try adjusting your search</p>
           </div>
         )}
       </div>

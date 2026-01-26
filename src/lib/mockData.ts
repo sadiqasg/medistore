@@ -1,10 +1,12 @@
 // MEDIS Mock Data - Store Dashboard
+// Soft drinks/minerals from Coca-Cola only
 
 export interface User {
   id: string;
   email: string;
   name: string;
-  role: 'admin' | 'manager' | 'clerk';
+  role: 'admin' | 'sub-admin';
+  canWrite: boolean;
   avatar?: string;
 }
 
@@ -12,7 +14,8 @@ export interface InventoryItem {
   id: string;
   sku: string;
   name: string;
-  category: 'beverages' | 'snacks' | 'supplies' | 'merchandise';
+  category: 'crates' | 'bottles' | 'cash';
+  size: string;
   currentStock: number;
   minStock: number;
   maxStock: number;
@@ -21,19 +24,58 @@ export interface InventoryItem {
   cratesOut: number;
   cratesReturned: number;
   lastRestocked: string;
-  trend: number[]; // Last 7 days stock levels
+  trend: number[];
+  isOutOfStock: boolean;
+}
+
+export interface ExpenseItem {
+  id: string;
+  description: string;
+  amount: number;
+  quantity: number;
 }
 
 export interface Expense {
   id: string;
   description: string;
-  amount: number;
-  category: 'utilities' | 'transport' | 'maintenance' | 'supplies' | 'other';
+  items: ExpenseItem[];
+  totalAmount: number;
+  category: 'utilities' | 'transport' | 'maintenance' | 'supplies' | 'tax' | 'other';
   status: 'pending' | 'approved' | 'rejected';
   submittedBy: string;
   submittedAt: string;
   approvedBy?: string;
   approvedAt?: string;
+}
+
+export interface PaymentRecord {
+  id: string;
+  date: string;
+  amount: number;
+  note?: string;
+}
+
+export interface SaleRecord {
+  id: string;
+  date: string;
+  items: SaleItem[];
+  totalAmount: number;
+  paymentType: 'cash' | 'credit' | 'partial';
+  amountPaid: number;
+  amountOwed: number;
+  customerName?: string;
+  customerPhone?: string;
+  payments: PaymentRecord[];
+  status: 'paid' | 'partial' | 'credit';
+}
+
+export interface SaleItem {
+  productId: string;
+  productName: string;
+  crates: number;
+  bottles: number;
+  unitPrice: number;
+  total: number;
 }
 
 export interface DebtRecord {
@@ -49,6 +91,16 @@ export interface DebtRecord {
   creditLimit: number;
 }
 
+export interface CustomerDebt {
+  id: string;
+  customerName: string;
+  customerPhone: string;
+  totalOwed: number;
+  maxDebtAllowed: number;
+  sales: SaleRecord[];
+  status: 'current' | 'warning' | 'exceeded';
+}
+
 export interface DailySummary {
   date: string;
   revenue: number;
@@ -57,114 +109,242 @@ export interface DailySummary {
   transactions: number;
 }
 
+export interface SystemNotification {
+  id: string;
+  type: 'low_stock' | 'debt_exceeded' | 'expense_pending' | 'payment_due';
+  title: string;
+  message: string;
+  createdAt: string;
+  read: boolean;
+  severity: 'info' | 'warning' | 'critical';
+}
+
+export interface CompanySettings {
+  name: string;
+  maxDebtPerCustomer: number;
+  lowStockThreshold: number;
+  debtWarningThreshold: number;
+}
+
 // Mock current user
 export const mockUser: User = {
   id: '1',
   email: 'admin@medina.store',
   name: 'Admin Medina',
   role: 'admin',
+  canWrite: true,
 };
 
-// Mock inventory items
-export const mockInventory: InventoryItem[] = [
-  {
-    id: '1',
-    sku: 'CC-350ML',
-    name: 'Coca-Cola 350ml',
-    category: 'beverages',
-    currentStock: 240,
-    minStock: 100,
-    maxStock: 500,
-    unitPrice: 25,
-    costPrice: 18,
-    cratesOut: 45,
-    cratesReturned: 38,
-    lastRestocked: '2026-01-24',
-    trend: [280, 265, 250, 248, 245, 242, 240],
-  },
+// Mock users list
+export const mockUsers: User[] = [
+  mockUser,
   {
     id: '2',
-    sku: 'CC-1L',
-    name: 'Coca-Cola 1L',
-    category: 'beverages',
-    currentStock: 85,
-    minStock: 50,
-    maxStock: 200,
-    unitPrice: 45,
-    costPrice: 32,
-    cratesOut: 20,
-    cratesReturned: 18,
-    lastRestocked: '2026-01-23',
-    trend: [120, 115, 105, 98, 92, 88, 85],
+    email: 'manager@medina.store',
+    name: 'Store Manager',
+    role: 'sub-admin',
+    canWrite: true,
   },
   {
     id: '3',
-    sku: 'SP-500ML',
-    name: 'Sprite 500ml',
-    category: 'beverages',
-    currentStock: 180,
-    minStock: 80,
-    maxStock: 300,
-    unitPrice: 30,
-    costPrice: 22,
-    cratesOut: 30,
-    cratesReturned: 28,
-    lastRestocked: '2026-01-25',
-    trend: [150, 160, 170, 175, 178, 179, 180],
-  },
-  {
-    id: '4',
-    sku: 'FT-1.5L',
-    name: 'Fanta Orange 1.5L',
-    category: 'beverages',
-    currentStock: 42,
-    minStock: 60,
-    maxStock: 150,
-    unitPrice: 55,
-    costPrice: 40,
-    cratesOut: 15,
-    cratesReturned: 12,
-    lastRestocked: '2026-01-20',
-    trend: [80, 72, 65, 58, 52, 48, 42],
-  },
-  {
-    id: '5',
-    sku: 'WTR-500ML',
-    name: 'Dasani Water 500ml',
-    category: 'beverages',
-    currentStock: 450,
-    minStock: 200,
-    maxStock: 600,
-    unitPrice: 15,
-    costPrice: 10,
-    cratesOut: 60,
-    cratesReturned: 55,
-    lastRestocked: '2026-01-26',
-    trend: [420, 430, 440, 445, 448, 449, 450],
-  },
-  {
-    id: '6',
-    sku: 'SNK-CHIPS',
-    name: 'Potato Chips Assorted',
-    category: 'snacks',
-    currentStock: 95,
-    minStock: 50,
-    maxStock: 200,
-    unitPrice: 35,
-    costPrice: 25,
-    cratesOut: 0,
-    cratesReturned: 0,
-    lastRestocked: '2026-01-22',
-    trend: [110, 108, 105, 102, 100, 98, 95],
+    email: 'clerk@medina.store',
+    name: 'Sales Clerk',
+    role: 'sub-admin',
+    canWrite: false,
   },
 ];
 
-// Mock expenses
+// Mock company settings
+export const mockCompanySettings: CompanySettings = {
+  name: 'MEDIS Store',
+  maxDebtPerCustomer: 50000,
+  lowStockThreshold: 20,
+  debtWarningThreshold: 40000,
+};
+
+// Mock inventory items - Coca-Cola soft drinks only
+export const mockInventory: InventoryItem[] = [
+  {
+    id: '1',
+    sku: 'CC-35CL',
+    name: 'Coca-Cola',
+    size: '35cl',
+    category: 'crates',
+    currentStock: 24,
+    minStock: 10,
+    maxStock: 50,
+    unitPrice: 200,
+    costPrice: 150,
+    cratesOut: 45,
+    cratesReturned: 38,
+    lastRestocked: '2026-01-24',
+    trend: [28, 26, 25, 24, 24, 24, 24],
+    isOutOfStock: false,
+  },
+  {
+    id: '2',
+    sku: 'CC-50CL',
+    name: 'Coca-Cola',
+    size: '50cl',
+    category: 'crates',
+    currentStock: 18,
+    minStock: 8,
+    maxStock: 40,
+    unitPrice: 250,
+    costPrice: 190,
+    cratesOut: 20,
+    cratesReturned: 18,
+    lastRestocked: '2026-01-23',
+    trend: [22, 21, 20, 19, 18, 18, 18],
+    isOutOfStock: false,
+  },
+  {
+    id: '3',
+    sku: 'CC-1L',
+    name: 'Coca-Cola',
+    size: '1 Litre',
+    category: 'crates',
+    currentStock: 12,
+    minStock: 6,
+    maxStock: 30,
+    unitPrice: 400,
+    costPrice: 320,
+    cratesOut: 15,
+    cratesReturned: 12,
+    lastRestocked: '2026-01-25',
+    trend: [15, 14, 13, 13, 12, 12, 12],
+    isOutOfStock: false,
+  },
+  {
+    id: '4',
+    sku: 'FT-35CL',
+    name: 'Fanta Orange',
+    size: '35cl',
+    category: 'crates',
+    currentStock: 20,
+    minStock: 10,
+    maxStock: 50,
+    unitPrice: 200,
+    costPrice: 150,
+    cratesOut: 30,
+    cratesReturned: 28,
+    lastRestocked: '2026-01-25',
+    trend: [22, 21, 21, 20, 20, 20, 20],
+    isOutOfStock: false,
+  },
+  {
+    id: '5',
+    sku: 'FT-50CL',
+    name: 'Fanta Orange',
+    size: '50cl',
+    category: 'crates',
+    currentStock: 0,
+    minStock: 8,
+    maxStock: 40,
+    unitPrice: 250,
+    costPrice: 190,
+    cratesOut: 12,
+    cratesReturned: 10,
+    lastRestocked: '2026-01-20',
+    trend: [8, 6, 4, 2, 1, 0, 0],
+    isOutOfStock: true,
+  },
+  {
+    id: '6',
+    sku: 'SP-35CL',
+    name: 'Sprite',
+    size: '35cl',
+    category: 'crates',
+    currentStock: 15,
+    minStock: 10,
+    maxStock: 50,
+    unitPrice: 200,
+    costPrice: 150,
+    cratesOut: 25,
+    cratesReturned: 22,
+    lastRestocked: '2026-01-24',
+    trend: [18, 17, 16, 16, 15, 15, 15],
+    isOutOfStock: false,
+  },
+  {
+    id: '7',
+    sku: 'SP-50CL',
+    name: 'Sprite',
+    size: '50cl',
+    category: 'crates',
+    currentStock: 22,
+    minStock: 8,
+    maxStock: 40,
+    unitPrice: 250,
+    costPrice: 190,
+    cratesOut: 18,
+    cratesReturned: 16,
+    lastRestocked: '2026-01-25',
+    trend: [20, 21, 21, 22, 22, 22, 22],
+    isOutOfStock: false,
+  },
+  {
+    id: '8',
+    sku: 'SCH-50CL',
+    name: 'Schweppes',
+    size: '50cl',
+    category: 'crates',
+    currentStock: 8,
+    minStock: 6,
+    maxStock: 30,
+    unitPrice: 250,
+    costPrice: 190,
+    cratesOut: 10,
+    cratesReturned: 8,
+    lastRestocked: '2026-01-22',
+    trend: [12, 11, 10, 9, 9, 8, 8],
+    isOutOfStock: false,
+  },
+  {
+    id: '9',
+    sku: 'EVA-75CL',
+    name: 'Eva Water',
+    size: '75cl',
+    category: 'crates',
+    currentStock: 35,
+    minStock: 15,
+    maxStock: 60,
+    unitPrice: 150,
+    costPrice: 100,
+    cratesOut: 40,
+    cratesReturned: 38,
+    lastRestocked: '2026-01-26',
+    trend: [32, 33, 34, 34, 35, 35, 35],
+    isOutOfStock: false,
+  },
+  {
+    id: '10',
+    sku: 'FG-35CL',
+    name: 'Fanta Grape',
+    size: '35cl',
+    category: 'crates',
+    currentStock: 5,
+    minStock: 10,
+    maxStock: 40,
+    unitPrice: 200,
+    costPrice: 150,
+    cratesOut: 8,
+    cratesReturned: 6,
+    lastRestocked: '2026-01-18',
+    trend: [12, 10, 8, 7, 6, 5, 5],
+    isOutOfStock: false,
+  },
+];
+
+// Mock expenses with items
 export const mockExpenses: Expense[] = [
   {
     id: '1',
     description: 'Electricity Bill - January',
-    amount: 4500,
+    items: [
+      { id: '1-1', description: 'PHCN Bill', amount: 4500, quantity: 1 },
+    ],
+    totalAmount: 4500,
     category: 'utilities',
     status: 'approved',
     submittedBy: 'clerk@medina.store',
@@ -175,7 +355,11 @@ export const mockExpenses: Expense[] = [
   {
     id: '2',
     description: 'Delivery Van Fuel',
-    amount: 1200,
+    items: [
+      { id: '2-1', description: 'Petrol (10 litres)', amount: 800, quantity: 1 },
+      { id: '2-2', description: 'Engine Oil', amount: 400, quantity: 1 },
+    ],
+    totalAmount: 1200,
     category: 'transport',
     status: 'pending',
     submittedBy: 'clerk@medina.store',
@@ -184,7 +368,11 @@ export const mockExpenses: Expense[] = [
   {
     id: '3',
     description: 'Refrigerator Repair',
-    amount: 3500,
+    items: [
+      { id: '3-1', description: 'Compressor repair', amount: 2500, quantity: 1 },
+      { id: '3-2', description: 'Gas refill', amount: 1000, quantity: 1 },
+    ],
+    totalAmount: 3500,
     category: 'maintenance',
     status: 'pending',
     submittedBy: 'manager@medina.store',
@@ -193,7 +381,11 @@ export const mockExpenses: Expense[] = [
   {
     id: '4',
     description: 'Cleaning Supplies',
-    amount: 650,
+    items: [
+      { id: '4-1', description: 'Detergent', amount: 350, quantity: 2 },
+      { id: '4-2', description: 'Mop and bucket', amount: 300, quantity: 1 },
+    ],
+    totalAmount: 650,
     category: 'supplies',
     status: 'approved',
     submittedBy: 'clerk@medina.store',
@@ -203,20 +395,107 @@ export const mockExpenses: Expense[] = [
   },
   {
     id: '5',
-    description: 'Staff Lunch Allowance',
-    amount: 800,
-    category: 'other',
-    status: 'rejected',
-    submittedBy: 'clerk@medina.store',
-    submittedAt: '2026-01-15T13:00:00',
+    description: 'VAT Payment - Q4 2025',
+    items: [
+      { id: '5-1', description: 'VAT', amount: 12000, quantity: 1 },
+    ],
+    totalAmount: 12000,
+    category: 'tax',
+    status: 'approved',
+    submittedBy: 'admin@medina.store',
+    submittedAt: '2026-01-10T09:00:00',
+    approvedBy: 'admin@medina.store',
+    approvedAt: '2026-01-10T09:05:00',
   },
 ];
 
-// Mock debt records
+// Mock sales records
+export const mockSales: SaleRecord[] = [
+  {
+    id: 'S001',
+    date: '2026-01-26T10:30:00',
+    items: [
+      { productId: '1', productName: 'Coca-Cola 35cl', crates: 2, bottles: 6, unitPrice: 200, total: 5400 },
+      { productId: '4', productName: 'Fanta Orange 35cl', crates: 1, bottles: 0, unitPrice: 200, total: 2400 },
+    ],
+    totalAmount: 7800,
+    paymentType: 'cash',
+    amountPaid: 7800,
+    amountOwed: 0,
+    payments: [],
+    status: 'paid',
+  },
+  {
+    id: 'S002',
+    date: '2026-01-26T11:15:00',
+    items: [
+      { productId: '3', productName: 'Coca-Cola 1L', crates: 3, bottles: 0, unitPrice: 400, total: 14400 },
+    ],
+    totalAmount: 14400,
+    paymentType: 'credit',
+    amountPaid: 0,
+    amountOwed: 14400,
+    customerName: 'Mama Chidi',
+    customerPhone: '08012345678',
+    payments: [],
+    status: 'credit',
+  },
+  {
+    id: 'S003',
+    date: '2026-01-26T14:00:00',
+    items: [
+      { productId: '6', productName: 'Sprite 35cl', crates: 1, bottles: 8, unitPrice: 200, total: 4000 },
+      { productId: '9', productName: 'Eva Water 75cl', crates: 2, bottles: 0, unitPrice: 150, total: 3600 },
+    ],
+    totalAmount: 7600,
+    paymentType: 'partial',
+    amountPaid: 5000,
+    amountOwed: 2600,
+    customerName: 'Oga Tunde',
+    customerPhone: '08098765432',
+    payments: [
+      { id: 'P001', date: '2026-01-26T14:00:00', amount: 5000, note: 'Will pay balance tomorrow' },
+    ],
+    status: 'partial',
+  },
+];
+
+// Mock customer debts
+export const mockCustomerDebts: CustomerDebt[] = [
+  {
+    id: 'CD001',
+    customerName: 'Mama Chidi',
+    customerPhone: '08012345678',
+    totalOwed: 45000,
+    maxDebtAllowed: 50000,
+    sales: [],
+    status: 'warning',
+  },
+  {
+    id: 'CD002',
+    customerName: 'Oga Tunde',
+    customerPhone: '08098765432',
+    totalOwed: 12600,
+    maxDebtAllowed: 50000,
+    sales: [],
+    status: 'current',
+  },
+  {
+    id: 'CD003',
+    customerName: 'Mr. Johnson',
+    customerPhone: '08055555555',
+    totalOwed: 52000,
+    maxDebtAllowed: 50000,
+    sales: [],
+    status: 'exceeded',
+  },
+];
+
+// Mock debt records (supplier debts)
 export const mockDebts: DebtRecord[] = [
   {
     id: '1',
-    creditor: 'Coca-Cola Bottlers',
+    creditor: 'Coca-Cola Bottling Company',
     principal: 150000,
     outstanding: 85000,
     interestRate: 0,
@@ -225,30 +504,6 @@ export const mockDebts: DebtRecord[] = [
     daysToDefault: 20,
     status: 'current',
     creditLimit: 200000,
-  },
-  {
-    id: '2',
-    creditor: 'Snacks Distributor Ltd',
-    principal: 25000,
-    outstanding: 22000,
-    interestRate: 2.5,
-    startDate: '2026-01-10',
-    dueDate: '2026-02-01',
-    daysToDefault: 6,
-    status: 'warning',
-    creditLimit: 30000,
-  },
-  {
-    id: '3',
-    creditor: 'Equipment Lease Co.',
-    principal: 45000,
-    outstanding: 45000,
-    interestRate: 5,
-    startDate: '2026-01-20',
-    dueDate: '2026-01-28',
-    daysToDefault: 2,
-    status: 'critical',
-    creditLimit: 50000,
   },
 ];
 
@@ -263,24 +518,85 @@ export const mockDailySummaries: DailySummary[] = [
   { date: '2026-01-26', revenue: 13500, expenses: 6200, netProfit: 7300, transactions: 151 },
 ];
 
+// Mock weekly summaries
+export const mockWeeklySummaries = [
+  { week: 'Week 1', startDate: '2026-01-01', endDate: '2026-01-07', revenue: 85000, expenses: 42000, netProfit: 43000 },
+  { week: 'Week 2', startDate: '2026-01-08', endDate: '2026-01-14', revenue: 92000, expenses: 48000, netProfit: 44000 },
+  { week: 'Week 3', startDate: '2026-01-15', endDate: '2026-01-21', revenue: 78000, expenses: 45000, netProfit: 33000 },
+  { week: 'Week 4', startDate: '2026-01-22', endDate: '2026-01-26', revenue: 62500, expenses: 38300, netProfit: 24200 },
+];
+
+// Mock monthly summaries
+export const mockMonthlySummaries = [
+  { month: 'January 2026', revenue: 317500, expenses: 173300, netProfit: 144200 },
+];
+
+// Mock yearly summaries
+export const mockYearlySummaries = [
+  { year: '2023', revenue: 3250000, expenses: 1850000, netProfit: 1400000 },
+  { year: '2024', revenue: 3890000, expenses: 2100000, netProfit: 1790000 },
+  { year: '2025', revenue: 4120000, expenses: 2250000, netProfit: 1870000 },
+];
+
+// Mock notifications
+export const mockNotifications: SystemNotification[] = [
+  {
+    id: 'N001',
+    type: 'low_stock',
+    title: 'Low Stock Alert',
+    message: 'Fanta Orange 50cl is out of stock',
+    createdAt: '2026-01-26T09:00:00',
+    read: false,
+    severity: 'critical',
+  },
+  {
+    id: 'N002',
+    type: 'low_stock',
+    title: 'Low Stock Alert',
+    message: 'Fanta Grape 35cl is below minimum stock level (5 crates remaining)',
+    createdAt: '2026-01-26T08:30:00',
+    read: false,
+    severity: 'warning',
+  },
+  {
+    id: 'N003',
+    type: 'debt_exceeded',
+    title: 'Customer Debt Exceeded',
+    message: 'Mr. Johnson has exceeded the maximum debt limit (₦52,000 / ₦50,000)',
+    createdAt: '2026-01-25T16:00:00',
+    read: false,
+    severity: 'critical',
+  },
+  {
+    id: 'N004',
+    type: 'expense_pending',
+    title: 'Expense Pending Approval',
+    message: '2 expenses are awaiting your approval',
+    createdAt: '2026-01-26T08:00:00',
+    read: true,
+    severity: 'info',
+  },
+];
+
 // Dashboard KPIs
 export const dashboardKPIs = {
-  todayRevenue: 13500,
+  todayRevenue: 29800,
   todayExpenses: 6200,
-  todayNetProfit: 7300,
-  todayTransactions: 151,
-  weekRevenue: 102500,
-  weekExpenses: 54300,
-  weekNetProfit: 48200,
-  totalInventoryValue: 245680,
+  todayNetProfit: 23600,
+  todayTransactions: 3,
+  weekRevenue: 62500,
+  weekExpenses: 38300,
+  weekNetProfit: 24200,
+  totalInventoryValue: 89250,
   lowStockItems: 2,
   pendingExpenses: 2,
-  totalDebtOutstanding: 152000,
-  creditUtilization: 76, // percentage
+  totalDebtOutstanding: 85000,
+  creditUtilization: 42.5,
   cratesOutstanding: 22,
+  totalCustomerDebt: 109600,
 };
 
-// Format currency (Nigerian Naira assumed)
+// Format currency (Nigerian Naira)
 export const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('en-NG', {
     style: 'currency',
@@ -296,7 +612,8 @@ export const formatPercentage = (value: number): string => {
 };
 
 // Get stock status
-export const getStockStatus = (current: number, min: number, max: number): 'low' | 'normal' | 'high' => {
+export const getStockStatus = (current: number, min: number, max: number): 'low' | 'normal' | 'high' | 'out' => {
+  if (current === 0) return 'out';
   if (current <= min) return 'low';
   if (current >= max * 0.9) return 'high';
   return 'normal';
@@ -311,3 +628,11 @@ export const getDebtStatusColor = (status: DebtRecord['status']): string => {
     default: return 'muted';
   }
 };
+
+// Get product display name
+export const getProductDisplayName = (item: InventoryItem): string => {
+  return `${item.name} ${item.size}`;
+};
+
+// Calculate bottles per crate (standard is 12)
+export const BOTTLES_PER_CRATE = 12;
