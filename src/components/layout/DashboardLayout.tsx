@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { mockUser } from '@/lib/mockData';
+import { mockUser, mockNotifications } from '@/lib/mockData';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import {
   LayoutDashboard,
   Package,
@@ -13,6 +14,10 @@ import {
   X,
   Bell,
   ChevronDown,
+  History,
+  AlertCircle,
+  AlertTriangle,
+  Info,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -24,6 +29,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -33,13 +44,28 @@ const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Inventory', href: '/inventory', icon: Package },
   { name: 'Expenses', href: '/expenses', icon: Receipt },
+  { name: 'History', href: '/history', icon: History },
   { name: 'Debt Tracking', href: '/debt', icon: CreditCard },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
+const severityIcons = {
+  critical: AlertCircle,
+  warning: AlertTriangle,
+  info: Info,
+};
+
+const severityColors = {
+  critical: 'text-danger',
+  warning: 'text-warning',
+  info: 'text-muted-foreground',
+};
+
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  
+  const unreadNotifications = mockNotifications.filter((n) => !n.read);
 
   const initials = mockUser.name
     .split(' ')
@@ -67,8 +93,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="flex h-16 items-center justify-between px-6 border-b border-sidebar-border">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-accent">
+            <Link to="/" className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-accent">
                 <span className="text-sm font-bold text-sidebar-primary">M</span>
               </div>
               <span className="text-lg font-semibold text-sidebar-primary">MEDIS</span>
@@ -84,7 +110,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 space-y-1 px-3 py-4">
+          <nav className="flex-1 space-y-1.5 px-3 py-6">
             {navigation.map((item) => {
               const isActive = location.pathname === item.href;
               return (
@@ -114,7 +140,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           {/* User section */}
           <div className="border-t border-sidebar-border p-4">
             <div className="flex items-center gap-3">
-              <Avatar className="h-9 w-9">
+              <Avatar className="h-10 w-10">
                 <AvatarFallback className="bg-sidebar-accent text-sidebar-primary text-sm">
                   {initials}
                 </AvatarFallback>
@@ -135,7 +161,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Top bar */}
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 px-4 lg:px-6">
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 px-4 lg:px-8">
           <Button
             variant="ghost"
             size="icon"
@@ -147,11 +173,56 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
           <div className="flex-1" />
 
+          {/* Theme toggle */}
+          <ThemeToggle />
+
           {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive" />
-          </Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative">
+                <Bell className="h-5 w-5" />
+                {unreadNotifications.length > 0 && (
+                  <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive" />
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-80 p-0">
+              <div className="border-b border-border p-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold">Notifications</h4>
+                  {unreadNotifications.length > 0 && (
+                    <Badge variant="secondary" className="text-xs">
+                      {unreadNotifications.length} new
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              <ScrollArea className="h-80">
+                <div className="space-y-1 p-2">
+                  {mockNotifications.map((notification) => {
+                    const Icon = severityIcons[notification.severity];
+                    return (
+                      <div
+                        key={notification.id}
+                        className={cn(
+                          'flex gap-3 rounded-lg p-3 transition-colors hover:bg-accent',
+                          !notification.read && 'bg-accent/50'
+                        )}
+                      >
+                        <Icon className={cn('h-5 w-5 mt-0.5 shrink-0', severityColors[notification.severity])} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium">{notification.title}</p>
+                          <p className="text-xs text-muted-foreground line-clamp-2">
+                            {notification.message}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            </PopoverContent>
+          </Popover>
 
           {/* User menu */}
           <DropdownMenu>
@@ -171,9 +242,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 <p className="text-xs text-muted-foreground">{mockUser.email}</p>
               </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
+              <DropdownMenuItem asChild>
+                <Link to="/settings">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Settings
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-destructive focus:text-destructive">
@@ -185,7 +258,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </header>
 
         {/* Page content */}
-        <main className="p-4 lg:p-6">{children}</main>
+        <main className="p-4 lg:p-8">{children}</main>
       </div>
     </div>
   );

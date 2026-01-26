@@ -2,15 +2,18 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { InventoryTable } from '@/components/inventory/InventoryTable';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { mockInventory, formatCurrency } from '@/lib/mockData';
-import { Package, AlertTriangle, RotateCcw, TrendingUp } from 'lucide-react';
+import { Package, AlertTriangle, RotateCcw, Banknote } from 'lucide-react';
 
 export default function Inventory() {
-  const totalItems = mockInventory.reduce((sum, item) => sum + item.currentStock, 0);
+  const totalCrates = mockInventory.reduce((sum, item) => sum + item.currentStock, 0);
   const lowStockItems = mockInventory.filter(
     (item) => item.currentStock <= item.minStock
   ).length;
+  const outOfStockItems = mockInventory.filter(
+    (item) => item.currentStock === 0
+  ).length;
   const totalValue = mockInventory.reduce(
-    (sum, item) => sum + item.currentStock * item.costPrice,
+    (sum, item) => sum + item.currentStock * 12 * item.costPrice, // 12 bottles per crate
     0
   );
   const cratesOutstanding = mockInventory.reduce(
@@ -20,35 +23,35 @@ export default function Inventory() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-8">
         {/* Page header */}
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Inventory</h1>
           <p className="text-muted-foreground">
-            Manage your stock levels, track trends, and monitor crate returns.
+            Manage your stock levels for crates, bottles, and cash. Track trends and monitor crate returns.
           </p>
         </div>
 
         {/* Summary metrics */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard
-            title="Total Stock"
-            value={totalItems.toLocaleString()}
-            subtitle="units across all items"
+            title="Total Crates"
+            value={totalCrates.toLocaleString()}
+            subtitle="crates in stock"
             icon={Package}
           />
           <MetricCard
-            title="Low Stock Alerts"
-            value={lowStockItems}
-            subtitle="items below minimum"
+            title="Stock Alerts"
+            value={lowStockItems + outOfStockItems}
+            subtitle={`${outOfStockItems} out of stock, ${lowStockItems} low`}
             icon={AlertTriangle}
-            variant={lowStockItems > 0 ? 'warning' : 'default'}
+            variant={lowStockItems + outOfStockItems > 0 ? 'warning' : 'default'}
           />
           <MetricCard
             title="Inventory Value"
             value={formatCurrency(totalValue)}
             subtitle="at cost price"
-            icon={TrendingUp}
+            icon={Banknote}
           />
           <MetricCard
             title="Crates Outstanding"

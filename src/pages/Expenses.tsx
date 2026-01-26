@@ -10,13 +10,13 @@ export default function Expenses() {
   const [activeTab, setActiveTab] = useState('all');
 
   const totals = {
-    all: mockExpenses.reduce((sum, e) => sum + e.amount, 0),
+    all: mockExpenses.reduce((sum, e) => sum + e.totalAmount, 0),
     pending: mockExpenses
       .filter((e) => e.status === 'pending')
-      .reduce((sum, e) => sum + e.amount, 0),
+      .reduce((sum, e) => sum + e.totalAmount, 0),
     approved: mockExpenses
       .filter((e) => e.status === 'approved')
-      .reduce((sum, e) => sum + e.amount, 0),
+      .reduce((sum, e) => sum + e.totalAmount, 0),
   };
 
   const counts = {
