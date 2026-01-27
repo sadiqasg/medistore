@@ -126,6 +126,26 @@ export interface CompanySettings {
   debtWarningThreshold: number;
 }
 
+export interface CocaColaOrderItem {
+  productId: string;
+  productName: string;
+  crates: number;
+  unitCost: number;
+}
+
+export interface CocaColaOrder {
+  id: string;
+  orderDate: string;
+  depositAmount: number;
+  depositReference: string;
+  items: CocaColaOrderItem[];
+  orderTotal: number;
+  expectedDelivery?: string;
+  deliveredDate?: string;
+  status: 'pending' | 'confirmed' | 'delivered';
+  notes?: string;
+}
+
 // Mock current user
 export const mockUser: User = {
   id: '1',
@@ -538,7 +558,53 @@ export const mockYearlySummaries = [
   { year: '2025', revenue: 4120000, expenses: 2250000, netProfit: 1870000 },
 ];
 
-// Mock notifications
+// Mock Coca-Cola orders
+export const mockCocaColaOrders: CocaColaOrder[] = [
+  {
+    id: 'ORD001',
+    orderDate: '2026-01-24T09:00:00',
+    depositAmount: 150000,
+    depositReference: 'TRF-20260124-001',
+    items: [
+      { productId: '1', productName: 'Coca-Cola 35cl', crates: 30, unitCost: 1800 },
+      { productId: '4', productName: 'Fanta Orange 35cl', crates: 20, unitCost: 1800 },
+      { productId: '6', productName: 'Sprite 35cl', crates: 15, unitCost: 1800 },
+    ],
+    orderTotal: 117000,
+    expectedDelivery: '2026-01-26',
+    status: 'confirmed',
+    notes: 'Regular weekly order',
+  },
+  {
+    id: 'ORD002',
+    orderDate: '2026-01-20T10:30:00',
+    depositAmount: 100000,
+    depositReference: 'TRF-20260120-003',
+    items: [
+      { productId: '3', productName: 'Coca-Cola 1L', crates: 20, unitCost: 3840 },
+      { productId: '9', productName: 'Eva Water 75cl', crates: 25, unitCost: 1200 },
+    ],
+    orderTotal: 106800,
+    expectedDelivery: '2026-01-22',
+    deliveredDate: '2026-01-22',
+    status: 'delivered',
+  },
+  {
+    id: 'ORD003',
+    orderDate: '2026-01-26T08:00:00',
+    depositAmount: 80000,
+    depositReference: 'TRF-20260126-001',
+    items: [
+      { productId: '5', productName: 'Fanta Orange 50cl', crates: 25, unitCost: 2280 },
+      { productId: '7', productName: 'Sprite 50cl', crates: 15, unitCost: 2280 },
+    ],
+    orderTotal: 91200,
+    status: 'pending',
+    notes: 'Urgent restock for Fanta 50cl',
+  },
+];
+
+
 export const mockNotifications: SystemNotification[] = [
   {
     id: 'N001',

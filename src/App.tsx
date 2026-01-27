@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Index from "./pages/Index";
 import Inventory from "./pages/Inventory";
+import Orders from "./pages/Orders";
 import Expenses from "./pages/Expenses";
 import History from "./pages/History";
 import Debt from "./pages/Debt";
@@ -24,6 +25,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/inventory" element={<Inventory />} />
+            <Route path="/orders" element={<Orders />} />
             <Route path="/expenses" element={<Expenses />} />
             <Route path="/history" element={<History />} />
             <Route path="/debt" element={<Debt />} />
