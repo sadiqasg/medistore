@@ -4,10 +4,13 @@ import { ExpensesList } from '@/components/expenses/ExpensesList';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { mockExpenses, formatCurrency } from '@/lib/mockData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Receipt, Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { Receipt, Clock, CheckCircle2, XCircle, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { NewExpenseDialog } from '@/components/expenses/NewExpenseDialog';
 
 export default function Expenses() {
   const [activeTab, setActiveTab] = useState('all');
+  const [showExpenseDialog, setShowExpenseDialog] = useState(false);
 
   const totals = {
     all: mockExpenses.reduce((sum, e) => sum + e.totalAmount, 0),
@@ -29,11 +32,17 @@ export default function Expenses() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Page header */}
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Expenses</h1>
-          <p className="text-muted-foreground">
-            Submit and manage expense claims. Managers can approve or reject submissions.
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Expenses</h1>
+            <p className="text-muted-foreground">
+              Submit and manage expense claims. Managers can approve or reject submissions.
+            </p>
+          </div>
+          <Button onClick={() => setShowExpenseDialog(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            New Expense
+          </Button>
         </div>
 
         {/* Summary metrics */}
@@ -97,6 +106,8 @@ export default function Expenses() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <NewExpenseDialog open={showExpenseDialog} onOpenChange={setShowExpenseDialog} />
     </DashboardLayout>
   );
 }

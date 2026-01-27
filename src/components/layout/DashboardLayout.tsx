@@ -18,6 +18,7 @@ import {
   AlertCircle,
   AlertTriangle,
   Info,
+  Truck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -43,6 +44,7 @@ interface DashboardLayoutProps {
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Inventory', href: '/inventory', icon: Package },
+  { name: 'Orders', href: '/orders', icon: Truck },
   { name: 'Expenses', href: '/expenses', icon: Receipt },
   { name: 'History', href: '/history', icon: History },
   { name: 'Debt Tracking', href: '/debt', icon: CreditCard },

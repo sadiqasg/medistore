@@ -1,10 +1,15 @@
+import { useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { InventoryTable } from '@/components/inventory/InventoryTable';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { mockInventory, formatCurrency } from '@/lib/mockData';
-import { Package, AlertTriangle, RotateCcw, Banknote } from 'lucide-react';
+import { Package, AlertTriangle, RotateCcw, Banknote, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { AddInventoryDialog } from '@/components/inventory/AddInventoryDialog';
 
 export default function Inventory() {
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  
   const totalCrates = mockInventory.reduce((sum, item) => sum + item.currentStock, 0);
   const lowStockItems = mockInventory.filter(
     (item) => item.currentStock <= item.minStock
@@ -25,11 +30,17 @@ export default function Inventory() {
     <DashboardLayout>
       <div className="space-y-8">
         {/* Page header */}
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Inventory</h1>
-          <p className="text-muted-foreground">
-            Manage your stock levels for crates, bottles, and cash. Track trends and monitor crate returns.
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Inventory</h1>
+            <p className="text-muted-foreground">
+              Manage your stock levels for crates, bottles, and cash. Track trends and monitor crate returns.
+            </p>
+          </div>
+          <Button onClick={() => setShowAddDialog(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Inventory
+          </Button>
         </div>
 
         {/* Summary metrics */}
@@ -65,6 +76,8 @@ export default function Inventory() {
         {/* Inventory table */}
         <InventoryTable />
       </div>
+
+      <AddInventoryDialog open={showAddDialog} onOpenChange={setShowAddDialog} />
     </DashboardLayout>
   );
 }
