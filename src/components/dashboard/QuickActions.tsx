@@ -52,29 +52,18 @@ export function QuickActions() {
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="flex flex-wrap gap-2">
         {actions.map((action, index) => {
           const content = (
             <div
               className={cn(
-                'group flex flex-col items-center gap-3 rounded-xl border border-border bg-card p-5 text-center transition-all hover:shadow-md hover:border-border/80 animate-fade-in cursor-pointer',
+                'group flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 transition-all hover:shadow-sm hover:border-border/80 animate-fade-in cursor-pointer',
+                action.color
               )}
               style={{ animationDelay: `${index * 50}ms` }}
             >
-              <div
-                className={cn(
-                  'flex h-12 w-12 items-center justify-center rounded-xl transition-colors',
-                  action.color
-                )}
-              >
-                <action.icon className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">{action.name}</p>
-                <p className="text-xs text-muted-foreground hidden sm:block">
-                  {action.description}
-                </p>
-              </div>
+              <action.icon className="h-4 w-4" />
+              <span className="text-sm font-medium">{action.name}</span>
             </div>
           );
 

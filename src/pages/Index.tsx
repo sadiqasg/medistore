@@ -83,45 +83,8 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* Main content grid */}
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* P&L Chart */}
-          <div className="lg:col-span-2">
-            <ProfitChart />
-          </div>
-
-          {/* Debt Gauge */}
-          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-            <h3 className="font-semibold mb-4">Credit Utilization</h3>
-            <div className="flex flex-col items-center">
-              <DebtGauge
-                value={dashboardKPIs.totalDebtOutstanding}
-                max={200000}
-                label="of ₦200,000 credit limit"
-              />
-              <div className="mt-6 w-full space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Outstanding</span>
-                  <span className="font-medium font-mono">
-                    {formatCurrency(dashboardKPIs.totalDebtOutstanding)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Available Credit</span>
-                  <span className="font-medium font-mono text-success">
-                    {formatCurrency(200000 - dashboardKPIs.totalDebtOutstanding)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Pending Expenses</span>
-                  <span className="font-medium font-mono text-warning">
-                    {dashboardKPIs.pendingExpenses} awaiting approval
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* P&L Chart */}
+        <ProfitChart />
 
         {/* Recent Activity */}
         <RecentActivity />
