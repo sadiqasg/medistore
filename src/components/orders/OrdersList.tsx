@@ -1,43 +1,24 @@
 import { useState } from 'react';
-import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
 import {
-  Truck,
-  Package,
-  CheckCircle2,
-  Clock,
-  Calendar,
-  Plus,
-} from 'lucide-react';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Truck, Plus, CheckCircle2 } from 'lucide-react';
 import { formatCurrency, type CocaColaOrder } from '@/lib/mockData';
 import { CocaColaOrderDialog } from './CocaColaOrderDialog';
 import { useToast } from '@/hooks/use-toast';
-
-const statusConfig = {
-  pending: {
-    label: 'Pending',
-    icon: Clock,
-    badge: 'bg-warning/10 text-warning border-warning/30',
-  },
-  confirmed: {
-    label: 'Confirmed',
-    icon: Package,
-    badge: 'bg-chart-1/10 text-chart-1 border-chart-1/30',
-  },
-  delivered: {
-    label: 'Delivered',
-    icon: CheckCircle2,
-    badge: 'bg-success/10 text-success border-success/30',
-  },
-};
 
 interface OrdersListProps {
   orders: CocaColaOrder[];
@@ -62,6 +43,28 @@ export function OrdersList({ orders }: OrdersListProps) {
     });
   };
 
+  // Flatten orders into rows (one row per item for detailed view)
+  const orderRows = orders.flatMap((order) =>
+    order.items.map((item, idx) => ({
+      orderId: order.id,
+      date: order.orderDate,
+      itemName: item.productName,
+      qty: item.crates,
+      unitPrice: item.unitCost,
+      totalPrice: item.crates * item.unitCost,
+      amountPaid: idx === 0 ? order.depositAmount : 0, // Show deposit on first item row
+      balance: idx === 0 ? order.orderTotal - order.depositAmount : 0,
+      status: order.status,
+      isFirstItem: idx === 0,
+      itemCount: order.items.length,
+    }))
+  );
+
+  // Calculate totals
+  const totalOrderValue = orders.reduce((sum, o) => sum + o.orderTotal, 0);
+  const totalPaid = orders.reduce((sum, o) => sum + o.depositAmount, 0);
+  const totalBalance = totalOrderValue - totalPaid;
+
   return (
     <>
       <div className="space-y-6">
@@ -79,11 +82,17 @@ export function OrdersList({ orders }: OrdersListProps) {
           </Button>
         </div>
 
-        {/* Orders list */}
-        <div className="space-y-4">
-          {orders.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
+        {/* Orders Table */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Truck className="h-4 w-4" />
+              Order Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {orders.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12">
                 <Truck className="h-12 w-12 text-muted-foreground mb-4" />
                 <p className="text-muted-foreground">No orders yet</p>
                 <Button
@@ -93,107 +102,105 @@ export function OrdersList({ orders }: OrdersListProps) {
                 >
                   Book your first order
                 </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            orders.map((order, index) => {
-              const config = statusConfig[order.status];
-              const StatusIcon = config.icon;
-
-              return (
-                <Card
-                  key={order.id}
-                  className="animate-fade-in overflow-hidden"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <CardContent className="p-0">
-                    <div className="flex flex-col lg:flex-row">
-                      <div className="flex-1 p-5">
-                        <div className="flex items-start justify-between mb-4">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold">Order #{order.id}</h3>
-                              <Badge variant="outline" className={config.badge}>
-                                <StatusIcon className="mr-1 h-3 w-3" />
-                                {config.label}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              Ref: {order.depositReference}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-xl font-bold font-mono tabular-nums">
-                              {formatCurrency(order.orderTotal)}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              Deposit: {formatCurrency(order.depositAmount)}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Order items summary */}
-                        <div className="mb-4">
-                          <p className="text-sm text-muted-foreground mb-2">Items:</p>
-                          <div className="flex flex-wrap gap-2">
-                            {order.items.map((item, idx) => (
-                              <Badge key={idx} variant="secondary">
-                                {item.productName} × {item.crates} crates
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Dates */}
-                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>DATE</TableHead>
+                      <TableHead>ITEMS</TableHead>
+                      <TableHead className="text-right">QTY (Crates)</TableHead>
+                      <TableHead className="text-right">UNIT PRICE</TableHead>
+                      <TableHead className="text-right">TOTAL PRICE</TableHead>
+                      <TableHead className="text-right">AMOUNT PAID</TableHead>
+                      <TableHead className="text-right">BALANCE</TableHead>
+                      <TableHead className="text-center">ACTION</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {orderRows.map((row, index) => (
+                      <TableRow key={`${row.orderId}-${index}`}>
+                        <TableCell className="font-medium">
+                          {row.isFirstItem ? formatDate(row.date) : ''}
+                        </TableCell>
+                        <TableCell>
                           <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <div>
-                              <p className="text-xs text-muted-foreground">Order Date</p>
-                              <p className="text-sm font-medium">{formatDate(order.orderDate)}</p>
-                            </div>
+                            {row.itemName}
+                            {row.isFirstItem && (
+                              <Badge
+                                variant="outline"
+                                className={
+                                  row.status === 'delivered'
+                                    ? 'bg-success/10 text-success border-success/30'
+                                    : row.status === 'confirmed'
+                                    ? 'bg-chart-1/10 text-chart-1 border-chart-1/30'
+                                    : 'bg-warning/10 text-warning border-warning/30'
+                                }
+                              >
+                                {row.status}
+                              </Badge>
+                            )}
                           </div>
-                          {order.expectedDelivery && (
-                            <div className="flex items-center gap-2">
-                              <Truck className="h-4 w-4 text-muted-foreground" />
-                              <div>
-                                <p className="text-xs text-muted-foreground">Expected Delivery</p>
-                                <p className="text-sm font-medium">{formatDate(order.expectedDelivery)}</p>
-                              </div>
-                            </div>
+                        </TableCell>
+                        <TableCell className="text-right font-mono">
+                          {row.qty}
+                        </TableCell>
+                        <TableCell className="text-right font-mono">
+                          {formatCurrency(row.unitPrice)}
+                        </TableCell>
+                        <TableCell className="text-right font-mono">
+                          {formatCurrency(row.totalPrice)}
+                        </TableCell>
+                        <TableCell className="text-right font-mono">
+                          {row.isFirstItem ? formatCurrency(row.amountPaid) : ''}
+                        </TableCell>
+                        <TableCell className="text-right font-mono">
+                          {row.isFirstItem ? (
+                            <span className={row.balance > 0 ? 'text-destructive' : 'text-success'}>
+                              {formatCurrency(row.balance)}
+                            </span>
+                          ) : ''}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {row.isFirstItem && row.status !== 'delivered' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleMarkDelivered(row.orderId)}
+                            >
+                              <CheckCircle2 className="h-4 w-4" />
+                            </Button>
                           )}
-                          {order.deliveredDate && (
-                            <div className="flex items-center gap-2">
-                              <CheckCircle2 className="h-4 w-4 text-success" />
-                              <div>
-                                <p className="text-xs text-muted-foreground">Delivered</p>
-                                <p className="text-sm font-medium">{formatDate(order.deliveredDate)}</p>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
 
-                      {/* Action panel */}
-                      {order.status !== 'delivered' && (
-                        <div className="bg-muted/30 border-t lg:border-t-0 lg:border-l border-border p-4 lg:w-48 flex flex-col items-center justify-center gap-2">
-                          <Button
-                            size="sm"
-                            className="w-full"
-                            onClick={() => handleMarkDelivered(order.id)}
-                          >
-                            <CheckCircle2 className="mr-2 h-4 w-4" />
-                            Mark Delivered
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })
-          )}
-        </div>
+            {/* Summary row */}
+            {orders.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-border flex flex-wrap gap-6 justify-end text-sm">
+                <div>
+                  <span className="text-muted-foreground">Total Order Value: </span>
+                  <span className="font-mono font-semibold">{formatCurrency(totalOrderValue)}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Total Paid: </span>
+                  <span className="font-mono font-semibold text-success">{formatCurrency(totalPaid)}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Total Balance: </span>
+                  <span className={`font-mono font-semibold ${totalBalance > 0 ? 'text-destructive' : 'text-success'}`}>
+                    {formatCurrency(totalBalance)}
+                  </span>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <CocaColaOrderDialog open={showOrderDialog} onOpenChange={setShowOrderDialog} />
