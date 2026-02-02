@@ -41,13 +41,16 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-const navigation = [
+const mainNavigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Inventory', href: '/inventory', icon: Package },
   { name: 'Orders', href: '/orders', icon: Truck },
   { name: 'Expenses', href: '/expenses', icon: Receipt },
-  { name: 'History', href: '/history', icon: History },
   { name: 'Debt Tracking', href: '/debt', icon: CreditCard },
+];
+
+const bottomNavigation = [
+  { name: 'History', href: '/history', icon: History },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
@@ -112,31 +115,59 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 space-y-1.5 px-3 py-6">
-            {navigation.map((item) => {
-              const isActive = location.pathname === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-sidebar-accent text-sidebar-primary'
-                      : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-primary'
-                  )}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <item.icon className="h-5 w-5" />
-                  {item.name}
-                  {item.name === 'Expenses' && (
-                    <Badge variant="destructive" className="ml-auto text-xs px-1.5 py-0.5">
-                      2
-                    </Badge>
-                  )}
-                </Link>
-              );
-            })}
+          <nav className="flex-1 flex flex-col px-3 py-6">
+            <div className="space-y-1.5 flex-1">
+              {mainNavigation.map((item) => {
+                const isActive = location.pathname === item.href;
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className={cn(
+                      'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                      isActive
+                        ? 'bg-sidebar-accent text-sidebar-primary'
+                        : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-primary'
+                    )}
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <item.icon className="h-5 w-5" />
+                    {item.name}
+                    {item.name === 'Expenses' && (
+                      <Badge variant="destructive" className="ml-auto text-xs px-1.5 py-0.5">
+                        2
+                      </Badge>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+            
+            {/* Divider */}
+            <div className="my-4 border-t border-sidebar-border" />
+            
+            {/* Bottom navigation */}
+            <div className="space-y-1.5">
+              {bottomNavigation.map((item) => {
+                const isActive = location.pathname === item.href;
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className={cn(
+                      'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                      isActive
+                        ? 'bg-sidebar-accent text-sidebar-primary'
+                        : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-primary'
+                    )}
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <item.icon className="h-5 w-5" />
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </div>
           </nav>
 
           {/* User section */}

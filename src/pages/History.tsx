@@ -28,6 +28,37 @@ import {
   mockYearlySummaries,
   formatCurrency,
 } from '@/lib/mockData';
+
+// Mock orders data for history
+const mockOrdersHistory = [
+  {
+    id: '1',
+    orderNumber: 'ORD-001',
+    date: '2026-02-01T10:30:00',
+    supplier: 'Coca-Cola',
+    items: 24,
+    totalAmount: 288000,
+    status: 'delivered' as const,
+  },
+  {
+    id: '2',
+    orderNumber: 'ORD-002',
+    date: '2026-01-28T14:15:00',
+    supplier: 'Coca-Cola',
+    items: 18,
+    totalAmount: 216000,
+    status: 'delivered' as const,
+  },
+  {
+    id: '3',
+    orderNumber: 'ORD-003',
+    date: '2026-01-25T09:00:00',
+    supplier: 'Coca-Cola',
+    items: 30,
+    totalAmount: 360000,
+    status: 'delivered' as const,
+  },
+];
 import {
   TrendingUp,
   TrendingDown,
@@ -35,6 +66,7 @@ import {
   ShoppingCart,
   Receipt,
   CreditCard,
+  Truck,
 } from 'lucide-react';
 
 type ViewPeriod = 'daily' | 'weekly' | 'monthly' | 'yearly';
@@ -189,7 +221,7 @@ export default function History() {
 
         {/* History Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="sales" className="gap-2">
               <ShoppingCart className="h-4 w-4" />
               Sales
@@ -200,7 +232,11 @@ export default function History() {
             </TabsTrigger>
             <TabsTrigger value="debts" className="gap-2">
               <CreditCard className="h-4 w-4" />
-              Customer Debts
+              Debts
+            </TabsTrigger>
+            <TabsTrigger value="orders" className="gap-2">
+              <Truck className="h-4 w-4" />
+              Orders
             </TabsTrigger>
           </TabsList>
 
@@ -378,6 +414,49 @@ export default function History() {
                           }
                         >
                           {debt.status === 'exceeded' ? 'Limit Exceeded' : debt.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </TabsContent>
+
+          {/* Orders History */}
+          <TabsContent value="orders" className="mt-6">
+            <div className="table-container">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Order #</TableHead>
+                    <TableHead>Supplier</TableHead>
+                    <TableHead className="text-right">Items</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {mockOrdersHistory.map((order) => (
+                    <TableRow key={order.id} className="data-row">
+                      <TableCell className="font-medium">
+                        {formatDate(order.date)}
+                      </TableCell>
+                      <TableCell className="font-mono text-sm">
+                        {order.orderNumber}
+                      </TableCell>
+                      <TableCell>{order.supplier}</TableCell>
+                      <TableCell className="text-right">{order.items} crates</TableCell>
+                      <TableCell className="text-right font-mono">
+                        {formatCurrency(order.totalAmount)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="secondary"
+                          className="bg-success/10 text-success"
+                        >
+                          {order.status}
                         </Badge>
                       </TableCell>
                     </TableRow>
