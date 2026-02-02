@@ -167,7 +167,6 @@ export function InventoryTable() {
                 </button>
               </TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="text-center">Trend (7d)</TableHead>
               <TableHead className="text-right">
                 <button
                   className="flex items-center gap-1 ml-auto hover:text-foreground transition-colors"
@@ -223,11 +222,6 @@ export function InventoryTable() {
                   </span>
                 </TableCell>
                 <TableCell>{getStockBadge(item)}</TableCell>
-                <TableCell>
-                  <div className="flex justify-center">
-                    <Sparkline data={item.trend} width={80} height={24} showArea />
-                  </div>
-                </TableCell>
                 <TableCell className="text-right font-mono tabular-nums">
                   {formatCurrency(item.unitPrice * 12)}
                 </TableCell>

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { LucideIcon, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
@@ -12,6 +13,7 @@ interface MetricCardProps {
   };
   variant?: 'default' | 'success' | 'warning' | 'danger';
   className?: string;
+  href?: string;
 }
 
 export function MetricCard({
@@ -22,6 +24,7 @@ export function MetricCard({
   trend,
   variant = 'default',
   className,
+  href,
 }: MetricCardProps) {
   const variantStyles = {
     default: 'border-border',
@@ -46,14 +49,8 @@ export function MetricCard({
 
   const TrendIcon = getTrendIcon();
 
-  return (
-    <div
-      className={cn(
-        'metric-card rounded-xl border bg-card p-5 shadow-sm transition-shadow hover:shadow-md animate-fade-in',
-        variantStyles[variant],
-        className
-      )}
-    >
+  const cardContent = (
+    <>
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
@@ -94,6 +91,27 @@ export function MetricCard({
           )}
         </div>
       )}
+    </>
+  );
+
+  const cardClasses = cn(
+    'metric-card rounded-xl border bg-card p-5 shadow-sm transition-shadow hover:shadow-md animate-fade-in block',
+    variantStyles[variant],
+    href && 'cursor-pointer',
+    className
+  );
+
+  if (href) {
+    return (
+      <Link to={href} className={cardClasses}>
+        {cardContent}
+      </Link>
+    );
+  }
+
+  return (
+    <div className={cardClasses}>
+      {cardContent}
     </div>
   );
 }

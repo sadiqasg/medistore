@@ -37,18 +37,21 @@ export default function Dashboard() {
             icon={Banknote}
             trend={{ value: 8.2, label: 'vs yesterday' }}
             variant="success"
+            href="/history"
           />
           <MetricCard
             title="Net Profit"
             value={formatCurrency(dashboardKPIs.todayNetProfit)}
             icon={TrendingUp}
             trend={{ value: 12.5, label: 'vs yesterday' }}
+            href="/history"
           />
           <MetricCard
             title="Transactions"
             value={dashboardKPIs.todayTransactions}
             icon={ShoppingCart}
             trend={{ value: -3.1, label: 'vs yesterday' }}
+            href="/history"
           />
           <MetricCard
             title="Low Stock Items"
@@ -56,6 +59,7 @@ export default function Dashboard() {
             icon={AlertTriangle}
             variant={dashboardKPIs.lowStockItems > 0 ? 'warning' : 'default'}
             subtitle="Items below threshold"
+            href="/inventory"
           />
         </div>
 
@@ -67,6 +71,7 @@ export default function Dashboard() {
             subtitle={`${formatCurrency(dashboardKPIs.weekNetProfit)} net profit`}
             icon={Banknote}
             trend={{ value: 15.3, label: 'vs last week' }}
+            href="/history"
           />
           <MetricCard
             title="Total Debt Outstanding"
@@ -74,12 +79,14 @@ export default function Dashboard() {
             icon={CreditCard}
             variant={dashboardKPIs.creditUtilization > 80 ? 'danger' : 'default'}
             subtitle={`${dashboardKPIs.creditUtilization}% credit utilization`}
+            href="/debt"
           />
           <MetricCard
             title="Inventory Value"
             value={formatCurrency(dashboardKPIs.totalInventoryValue)}
             icon={Package}
-            subtitle={`${dashboardKPIs.cratesOutstanding} crates outstanding`}
+            subtitle="at cost price"
+            href="/inventory"
           />
         </div>
 
