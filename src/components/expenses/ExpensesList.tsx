@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { mockExpenses, formatCurrency, type Expense } from '@/lib/mockData';
-import { Badge } from '@/components/ui/badge';
+import { mockExpenses, formatCurrency } from '@/lib/mockData';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -10,21 +9,27 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { NewExpenseDialog } from './NewExpenseDialog';
 import {
-  Check,
-  X,
   MoreHorizontal,
   Plus,
-  Clock,
-  CheckCircle2,
-  XCircle,
   Zap,
   Truck,
   Wrench,
   ShoppingBag,
   MoreVertical,
   Landmark,
+  Receipt,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 
 const categoryIcons: Record<string, typeof Zap> = {
@@ -45,46 +50,28 @@ const categoryColors: Record<string, string> = {
   other: 'bg-muted text-muted-foreground',
 };
 
-const statusConfig = {
-  pending: {
-    label: 'Pending',
-    variant: 'outline' as const,
-    icon: Clock,
-    color: 'text-warning',
-  },
-  approved: {
-    label: 'Approved',
-    variant: 'secondary' as const,
-    icon: CheckCircle2,
-    color: 'text-success',
-  },
-  rejected: {
-    label: 'Rejected',
-    variant: 'destructive' as const,
-    icon: XCircle,
-    color: 'text-danger',
-  },
-};
-
-interface ExpensesListProps {
-  filter?: 'all' | 'pending' | 'approved' | 'rejected';
-}
-
-export function ExpensesList({ filter = 'all' }: ExpensesListProps) {
+export function ExpensesList() {
   const [expenses] = useState(mockExpenses);
   const [showNewExpense, setShowNewExpense] = useState(false);
+  const [expandedExpenses, setExpandedExpenses] = useState<Set<string>>(new Set());
 
-  const filteredExpenses =
-    filter === 'all'
-      ? expenses
-      : expenses.filter((expense) => expense.status === filter);
+  const toggleExpanded = (id: string) => {
+    setExpandedExpenses(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+      year: 'numeric',
     });
   };
 
@@ -93,10 +80,9 @@ export function ExpensesList({ filter = 'all' }: ExpensesListProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Expenses</h2>
+          <h2 className="text-lg font-semibold">All Expenses</h2>
           <p className="text-sm text-muted-foreground">
-            {filteredExpenses.length} expense{filteredExpenses.length !== 1 ? 's' : ''}{' '}
-            {filter !== 'all' && `(${filter})`}
+            {expenses.length} expense{expenses.length !== 1 ? 's' : ''} recorded
           </p>
         </div>
         <Button size="sm" onClick={() => setShowNewExpense(true)}>
@@ -105,125 +91,131 @@ export function ExpensesList({ filter = 'all' }: ExpensesListProps) {
         </Button>
       </div>
 
-      {/* Expense cards */}
-      <div className="space-y-3">
-        {filteredExpenses.map((expense, index) => {
-          const CategoryIcon = categoryIcons[expense.category] || MoreVertical;
-          const status = statusConfig[expense.status];
-          const StatusIcon = status.icon;
+      {/* Expenses Table */}
+      <div className="table-container">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/50 hover:bg-muted/50">
+              <TableHead className="w-[40px]"></TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Submitted By</TableHead>
+              <TableHead className="text-right">Amount</TableHead>
+              <TableHead className="w-[50px]"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {expenses.map((expense, index) => {
+              const CategoryIcon = categoryIcons[expense.category] || MoreVertical;
+              const isExpanded = expandedExpenses.has(expense.id);
+              const hasMultipleItems = expense.items.length > 1;
 
-          return (
-            <Card
-              key={expense.id}
-              className={cn(
-                'transition-all hover:shadow-md animate-fade-in',
-                expense.status === 'pending' && 'border-warning/30'
-              )}
-              style={{ animationDelay: `${index * 50}ms` }}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-start gap-4">
-                  {/* Category icon */}
-                  <div
+              return (
+                <>
+                  <TableRow
+                    key={expense.id}
                     className={cn(
-                      'flex h-11 w-11 shrink-0 items-center justify-center rounded-lg',
-                      categoryColors[expense.category] || categoryColors.other
+                      'data-row animate-fade-in cursor-pointer',
+                      isExpanded && 'bg-muted/30'
                     )}
+                    style={{ animationDelay: `${index * 30}ms` }}
+                    onClick={() => hasMultipleItems && toggleExpanded(expense.id)}
                   >
-                    <CategoryIcon className="h-5 w-5" />
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="font-medium">{expense.description}</p>
-                        <p className="text-sm text-muted-foreground capitalize">
-                          {expense.category} • {formatDate(expense.submittedAt)}
-                        </p>
-                        {expense.items.length > 1 && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {expense.items.length} items
-                          </p>
+                    <TableCell>
+                      {hasMultipleItems ? (
+                        <Button variant="ghost" size="icon" className="h-6 w-6">
+                          {isExpanded ? (
+                            <ChevronDown className="h-4 w-4" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4" />
+                          )}
+                        </Button>
+                      ) : null}
+                    </TableCell>
+                    <TableCell className="font-mono text-sm">
+                      {formatDate(expense.submittedAt)}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={cn(
+                            'flex h-8 w-8 items-center justify-center rounded-lg',
+                            categoryColors[expense.category] || categoryColors.other
+                          )}
+                        >
+                          <CategoryIcon className="h-4 w-4" />
+                        </div>
+                        <span className="font-medium">{expense.description}</span>
+                        {hasMultipleItems && (
+                          <span className="text-xs text-muted-foreground">
+                            ({expense.items.length} items)
+                          </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-lg font-semibold font-mono tabular-nums">
-                          {formatCurrency(expense.totalAmount)}
-                        </span>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>View Details</DropdownMenuItem>
-                            <DropdownMenuItem>Edit</DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive">
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </div>
-
-                    {/* Status and actions */}
-                    <div className="mt-3 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Badge variant={status.variant} className="gap-1">
-                          <StatusIcon className={cn('h-3 w-3', status.color)} />
-                          {status.label}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          by {expense.submittedBy.split('@')[0]}
-                        </span>
-                      </div>
-
-                      {expense.status === 'pending' && (
-                        <div className="flex items-center gap-1">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-7 gap-1 text-success hover:text-success hover:bg-success/10"
-                          >
-                            <Check className="h-3.5 w-3.5" />
-                            Approve
+                    </TableCell>
+                    <TableCell className="capitalize">{expense.category}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {expense.submittedBy.split('@')[0]}
+                    </TableCell>
+                    <TableCell className="text-right font-mono tabular-nums font-semibold">
+                      {formatCurrency(expense.totalAmount)}
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-7 gap-1 text-danger hover:text-danger hover:bg-danger/10"
-                          >
-                            <X className="h-3.5 w-3.5" />
-                            Reject
-                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>View Details</DropdownMenuItem>
+                          <DropdownMenuItem>Edit</DropdownMenuItem>
+                          <DropdownMenuItem className="text-destructive">
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Expanded items breakdown */}
+                  {isExpanded && expense.items.map((item, itemIndex) => (
+                    <TableRow
+                      key={`${expense.id}-item-${itemIndex}`}
+                      className="bg-muted/20 hover:bg-muted/30"
+                    >
+                      <TableCell></TableCell>
+                      <TableCell></TableCell>
+                      <TableCell colSpan={3} className="pl-12">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Receipt className="h-3.5 w-3.5" />
+                          <span>{item.description}</span>
+                          {item.quantity > 1 && (
+                            <span className="text-xs">× {item.quantity}</span>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+                      </TableCell>
+                      <TableCell className="text-right font-mono tabular-nums text-sm">
+                        {formatCurrency(item.amount)}
+                      </TableCell>
+                      <TableCell></TableCell>
+                    </TableRow>
+                  ))}
+                </>
+              );
+            })}
+          </TableBody>
+        </Table>
 
-      {filteredExpenses.length === 0 && (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
-              <Clock className="h-6 w-6 text-muted-foreground" />
-            </div>
-            <p className="font-medium text-muted-foreground">No expenses found</p>
-            <p className="text-sm text-muted-foreground">
-              {filter === 'pending'
-                ? 'All expenses have been reviewed'
-                : 'Start by adding a new expense'}
-            </p>
-          </CardContent>
-        </Card>
-      )}
+        {expenses.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+            <Receipt className="h-12 w-12 mb-3 opacity-50" />
+            <p className="font-medium">No expenses found</p>
+            <p className="text-sm">Start by adding a new expense</p>
+          </div>
+        )}
+      </div>
 
       <NewExpenseDialog open={showNewExpense} onOpenChange={setShowNewExpense} />
     </div>
