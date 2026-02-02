@@ -173,11 +173,10 @@ export function InventoryTable() {
                   className="flex items-center gap-1 ml-auto hover:text-foreground transition-colors"
                   onClick={() => handleSort('unitPrice')}
                 >
-                  Price/Bottle
+                  Price/Crate
                   <ArrowUpDown className="h-3.5 w-3.5" />
                 </button>
               </TableHead>
-              <TableHead className="text-right">Crates Outstanding</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -230,15 +229,7 @@ export function InventoryTable() {
                   </div>
                 </TableCell>
                 <TableCell className="text-right font-mono tabular-nums">
-                  {formatCurrency(item.unitPrice)}
-                </TableCell>
-                <TableCell className="text-right">
-                  <span className={cn(
-                    'font-mono tabular-nums',
-                    (item.cratesOut - item.cratesReturned) > 0 ? 'text-warning' : 'text-muted-foreground'
-                  )}>
-                    {item.cratesOut - item.cratesReturned}
-                  </span>
+                  {formatCurrency(item.unitPrice * 12)}
                 </TableCell>
               </TableRow>
             ))}

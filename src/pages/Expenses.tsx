@@ -3,30 +3,16 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ExpensesList } from '@/components/expenses/ExpensesList';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { mockExpenses, formatCurrency } from '@/lib/mockData';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Receipt, Clock, CheckCircle2, XCircle, Plus } from 'lucide-react';
+import { Receipt, Calendar, TrendingUp, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { NewExpenseDialog } from '@/components/expenses/NewExpenseDialog';
 
 export default function Expenses() {
-  const [activeTab, setActiveTab] = useState('all');
   const [showExpenseDialog, setShowExpenseDialog] = useState(false);
 
-  const totals = {
-    all: mockExpenses.reduce((sum, e) => sum + e.totalAmount, 0),
-    pending: mockExpenses
-      .filter((e) => e.status === 'pending')
-      .reduce((sum, e) => sum + e.totalAmount, 0),
-    approved: mockExpenses
-      .filter((e) => e.status === 'approved')
-      .reduce((sum, e) => sum + e.totalAmount, 0),
-  };
-
-  const counts = {
-    pending: mockExpenses.filter((e) => e.status === 'pending').length,
-    approved: mockExpenses.filter((e) => e.status === 'approved').length,
-    rejected: mockExpenses.filter((e) => e.status === 'rejected').length,
-  };
+  const totalExpenses = mockExpenses.reduce((sum, e) => sum + e.totalAmount, 0);
+  const expenseCount = mockExpenses.length;
+  const avgExpense = expenseCount > 0 ? totalExpenses / expenseCount : 0;
 
   return (
     <DashboardLayout>
@@ -36,7 +22,7 @@ export default function Expenses() {
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Expenses</h1>
             <p className="text-muted-foreground">
-              Submit and manage expense claims. Managers can approve or reject submissions.
+              Track and manage all business expenses with itemized breakdowns.
             </p>
           </div>
           <Button onClick={() => setShowExpenseDialog(true)}>
@@ -46,65 +32,29 @@ export default function Expenses() {
         </div>
 
         {/* Summary metrics */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-3">
           <MetricCard
             title="Total Expenses"
-            value={formatCurrency(totals.all)}
+            value={formatCurrency(totalExpenses)}
             subtitle="This month"
             icon={Receipt}
           />
           <MetricCard
-            title="Pending Approval"
-            value={formatCurrency(totals.pending)}
-            subtitle={`${counts.pending} expense${counts.pending !== 1 ? 's' : ''}`}
-            icon={Clock}
-            variant={counts.pending > 0 ? 'warning' : 'default'}
-          />
-          <MetricCard
-            title="Approved"
-            value={formatCurrency(totals.approved)}
-            subtitle={`${counts.approved} expense${counts.approved !== 1 ? 's' : ''}`}
-            icon={CheckCircle2}
-            variant="success"
-          />
-          <MetricCard
-            title="Rejected"
-            value={counts.rejected}
+            title="Number of Expenses"
+            value={expenseCount}
             subtitle="This month"
-            icon={XCircle}
-            variant={counts.rejected > 0 ? 'danger' : 'default'}
+            icon={Calendar}
+          />
+          <MetricCard
+            title="Average Expense"
+            value={formatCurrency(avgExpense)}
+            subtitle="Per transaction"
+            icon={TrendingUp}
           />
         </div>
 
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
-            <TabsTrigger value="all">All Expenses</TabsTrigger>
-            <TabsTrigger value="pending" className="gap-1.5">
-              Pending
-              {counts.pending > 0 && (
-                <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-warning text-warning-foreground text-xs font-medium">
-                  {counts.pending}
-                </span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="approved">Approved</TabsTrigger>
-            <TabsTrigger value="rejected">Rejected</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="all" className="mt-4">
-            <ExpensesList filter="all" />
-          </TabsContent>
-          <TabsContent value="pending" className="mt-4">
-            <ExpensesList filter="pending" />
-          </TabsContent>
-          <TabsContent value="approved" className="mt-4">
-            <ExpensesList filter="approved" />
-          </TabsContent>
-          <TabsContent value="rejected" className="mt-4">
-            <ExpensesList filter="rejected" />
-          </TabsContent>
-        </Tabs>
+        {/* Expenses List */}
+        <ExpensesList />
       </div>
 
       <NewExpenseDialog open={showExpenseDialog} onOpenChange={setShowExpenseDialog} />
