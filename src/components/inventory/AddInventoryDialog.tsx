@@ -28,6 +28,7 @@ interface InventoryAddItem {
   productName: string;
   crates: number;
   bottles: number;
+  costPerCrate: number;
 }
 
 interface AddInventoryDialogProps {
@@ -41,13 +42,13 @@ export function AddInventoryDialog({ open, onOpenChange }: AddInventoryDialogPro
   const [reference, setReference] = useState('');
   const [notes, setNotes] = useState('');
   const [items, setItems] = useState<InventoryAddItem[]>([
-    { id: '1', productId: '', productName: '', crates: 0, bottles: 0 },
+    { id: '1', productId: '', productName: '', crates: 0, bottles: 0, costPerCrate: 0 },
   ]);
 
   const addItem = () => {
     setItems([
       ...items,
-      { id: Date.now().toString(), productId: '', productName: '', crates: 0, bottles: 0 },
+      { id: Date.now().toString(), productId: '', productName: '', crates: 0, bottles: 0, costPerCrate: 0 },
     ]);
   };
 
@@ -103,7 +104,7 @@ export function AddInventoryDialog({ open, onOpenChange }: AddInventoryDialogPro
     setSource('delivery');
     setReference('');
     setNotes('');
-    setItems([{ id: '1', productId: '', productName: '', crates: 0, bottles: 0 }]);
+    setItems([{ id: '1', productId: '', productName: '', crates: 0, bottles: 0, costPerCrate: 0 }]);
     onOpenChange(false);
   };
 
@@ -179,7 +180,7 @@ export function AddInventoryDialog({ open, onOpenChange }: AddInventoryDialogPro
                       </Button>
                     )}
                   </div>
-                  <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="grid gap-3 sm:grid-cols-4">
                     <div className="sm:col-span-1">
                       <Label className="text-xs">Product</Label>
                       <Select
@@ -220,6 +221,18 @@ export function AddInventoryDialog({ open, onOpenChange }: AddInventoryDialogPro
                         value={item.bottles || ''}
                         onChange={(e) =>
                           updateItem(item.id, 'bottles', parseInt(e.target.value) || 0)
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Cost/Crate (₦)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        placeholder="0"
+                        value={item.costPerCrate || ''}
+                        onChange={(e) =>
+                          updateItem(item.id, 'costPerCrate', parseInt(e.target.value) || 0)
                         }
                       />
                     </div>
