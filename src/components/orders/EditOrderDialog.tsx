@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, Trash2, Truck } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, Trash2, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { mockInventory, formatCurrency, getProductDisplayName, BOTTLES_PER_CRATE } from '@/lib/mockData';
+import { mockInventory, formatCurrency, getProductDisplayName, BOTTLES_PER_CRATE, type CocaColaOrder } from '@/lib/mockData';
 import { useToast } from '@/hooks/use-toast';
 
 interface OrderItem {
@@ -31,20 +31,35 @@ interface OrderItem {
   unitCost: number;
 }
 
-interface CocaColaOrderDialogProps {
+interface EditOrderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  order: CocaColaOrder | null;
 }
 
-export function CocaColaOrderDialog({ open, onOpenChange }: CocaColaOrderDialogProps) {
+export function EditOrderDialog({ open, onOpenChange, order }: EditOrderDialogProps) {
   const { toast } = useToast();
   const [customerName, setCustomerName] = useState('');
   const [amountPaid, setAmountPaid] = useState<number>(0);
   const [isDelivered, setIsDelivered] = useState('true');
   const [notes, setNotes] = useState('');
-  const [items, setItems] = useState<OrderItem[]>([
-    { id: '1', productId: '', productName: '', crates: 0, unitCost: 0 },
-  ]);
+  const [items, setItems] = useState<OrderItem[]>([]);
+
+  useEffect(() => {
+    if (order) {
+      setCustomerName(order.customerName);
+      setAmountPaid(order.amountPaid);
+      setIsDelivered(order.isDelivered ? 'true' : 'false');
+      setNotes(order.notes || '');
+      setItems(order.items.map((item, idx) => ({
+        id: idx.toString(),
+        productId: item.productId,
+        productName: item.productName,
+        crates: item.crates,
+        unitCost: item.unitCost,
+      })));
+    }
+  }, [order]);
 
   const addItem = () => {
     setItems([
@@ -100,30 +115,26 @@ export function CocaColaOrderDialog({ open, onOpenChange }: CocaColaOrderDialogP
     }
 
     toast({
-      title: 'Order Booked! 🎉',
-      description: `Order of ${formatCurrency(orderTotal)} from ${customerName} has been recorded.`,
-      variant: 'success',
+      title: 'Order Updated ✏️',
+      description: `Order has been updated successfully.`,
+      variant: 'info',
     });
 
-    // Reset form
-    setCustomerName('');
-    setAmountPaid(0);
-    setIsDelivered('true');
-    setNotes('');
-    setItems([{ id: '1', productId: '', productName: '', crates: 0, unitCost: 0 }]);
     onOpenChange(false);
   };
+
+  if (!order) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <Truck className="h-5 w-5 text-primary" />
-            <DialogTitle>Book Order</DialogTitle>
+            <Pencil className="h-5 w-5 text-primary" />
+            <DialogTitle>Edit Order</DialogTitle>
           </div>
           <DialogDescription>
-            Record a new order with payment and delivery details.
+            Update order details, items, or payment information.
           </DialogDescription>
         </DialogHeader>
 
@@ -249,21 +260,21 @@ export function CocaColaOrderDialog({ open, onOpenChange }: CocaColaOrderDialogP
               className="flex gap-6"
             >
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="true" id="delivered" />
-                <Label htmlFor="delivered" className="font-normal cursor-pointer">Delivered</Label>
+                <RadioGroupItem value="true" id="edit-delivered" />
+                <Label htmlFor="edit-delivered" className="font-normal cursor-pointer">Delivered</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="false" id="not-delivered" />
-                <Label htmlFor="not-delivered" className="font-normal cursor-pointer">Not Delivered</Label>
+                <RadioGroupItem value="false" id="edit-not-delivered" />
+                <Label htmlFor="edit-not-delivered" className="font-normal cursor-pointer">Not Delivered</Label>
               </div>
             </RadioGroup>
           </div>
 
           {/* Notes */}
           <div className="space-y-2">
-            <Label htmlFor="notes">Notes (Optional)</Label>
+            <Label htmlFor="edit-notes">Notes (Optional)</Label>
             <Textarea
-              id="notes"
+              id="edit-notes"
               placeholder="Any special instructions or notes..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -295,8 +306,8 @@ export function CocaColaOrderDialog({ open, onOpenChange }: CocaColaOrderDialogP
             Cancel
           </Button>
           <Button type="button" onClick={handleSubmit}>
-            <Truck className="mr-2 h-4 w-4" />
-            Book Order
+            <Pencil className="mr-2 h-4 w-4" />
+            Save Changes
           </Button>
         </DialogFooter>
       </DialogContent>
