@@ -133,16 +133,23 @@ export interface CocaColaOrderItem {
   unitCost: number;
 }
 
+export interface OrderPaymentRecord {
+  id: string;
+  date: string;
+  amount: number;
+  note?: string;
+}
+
 export interface CocaColaOrder {
   id: string;
   orderDate: string;
-  depositAmount: number;
-  depositReference: string;
+  customerName: string;
   items: CocaColaOrderItem[];
   orderTotal: number;
-  expectedDelivery?: string;
-  deliveredDate?: string;
-  status: 'pending' | 'confirmed' | 'delivered';
+  amountPaid: number;
+  balance: number;
+  isDelivered: boolean;
+  payments: OrderPaymentRecord[];
   notes?: string;
 }
 
@@ -563,43 +570,52 @@ export const mockCocaColaOrders: CocaColaOrder[] = [
   {
     id: 'ORD001',
     orderDate: '2026-01-24T09:00:00',
-    depositAmount: 150000,
-    depositReference: 'TRF-20260124-001',
+    customerName: 'Coca-Cola Depot',
     items: [
       { productId: '1', productName: 'Coca-Cola 35cl', crates: 30, unitCost: 1800 },
       { productId: '4', productName: 'Fanta Orange 35cl', crates: 20, unitCost: 1800 },
       { productId: '6', productName: 'Sprite 35cl', crates: 15, unitCost: 1800 },
     ],
     orderTotal: 117000,
-    expectedDelivery: '2026-01-26',
-    status: 'confirmed',
+    amountPaid: 117000,
+    balance: 0,
+    isDelivered: true,
+    payments: [
+      { id: 'P001', date: '2026-01-24T09:00:00', amount: 117000, note: 'Full payment' },
+    ],
     notes: 'Regular weekly order',
   },
   {
     id: 'ORD002',
     orderDate: '2026-01-20T10:30:00',
-    depositAmount: 100000,
-    depositReference: 'TRF-20260120-003',
+    customerName: 'Coca-Cola Main',
     items: [
       { productId: '3', productName: 'Coca-Cola 1L', crates: 20, unitCost: 3840 },
       { productId: '9', productName: 'Eva Water 75cl', crates: 25, unitCost: 1200 },
     ],
     orderTotal: 106800,
-    expectedDelivery: '2026-01-22',
-    deliveredDate: '2026-01-22',
-    status: 'delivered',
+    amountPaid: 100000,
+    balance: 6800,
+    isDelivered: true,
+    payments: [
+      { id: 'P002', date: '2026-01-20T10:30:00', amount: 100000, note: 'Initial deposit' },
+    ],
   },
   {
     id: 'ORD003',
     orderDate: '2026-01-26T08:00:00',
-    depositAmount: 80000,
-    depositReference: 'TRF-20260126-001',
+    customerName: 'Coca-Cola Depot',
     items: [
       { productId: '5', productName: 'Fanta Orange 50cl', crates: 25, unitCost: 2280 },
       { productId: '7', productName: 'Sprite 50cl', crates: 15, unitCost: 2280 },
     ],
     orderTotal: 91200,
-    status: 'pending',
+    amountPaid: 80000,
+    balance: 11200,
+    isDelivered: false,
+    payments: [
+      { id: 'P003', date: '2026-01-26T08:00:00', amount: 80000, note: 'Deposit' },
+    ],
     notes: 'Urgent restock for Fanta 50cl',
   },
 ];

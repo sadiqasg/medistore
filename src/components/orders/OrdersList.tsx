@@ -15,9 +15,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Truck, Plus, CheckCircle2 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Truck, Plus, CheckCircle2, Pencil, DollarSign, MoreHorizontal } from 'lucide-react';
 import { formatCurrency, type CocaColaOrder } from '@/lib/mockData';
 import { CocaColaOrderDialog } from './CocaColaOrderDialog';
+import { EditOrderDialog } from './EditOrderDialog';
+import { RecordOrderPaymentDialog } from './RecordOrderPaymentDialog';
 import { useToast } from '@/hooks/use-toast';
 
 interface OrdersListProps {
@@ -27,12 +35,26 @@ interface OrdersListProps {
 export function OrdersList({ orders }: OrdersListProps) {
   const { toast } = useToast();
   const [showOrderDialog, setShowOrderDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<CocaColaOrder | null>(null);
 
-  const handleMarkDelivered = (orderId: string) => {
+  const handleMarkDelivered = (order: CocaColaOrder) => {
     toast({
-      title: 'Order Marked as Delivered',
-      description: 'Inventory has been updated with the delivered items.',
+      title: 'Marked as Delivered ✅',
+      description: `Order from ${order.customerName} has been marked as delivered.`,
+      variant: 'success',
     });
+  };
+
+  const handleEdit = (order: CocaColaOrder) => {
+    setSelectedOrder(order);
+    setShowEditDialog(true);
+  };
+
+  const handleRecordPayment = (order: CocaColaOrder) => {
+    setSelectedOrder(order);
+    setShowPaymentDialog(true);
   };
 
   const formatDate = (dateString: string) => {
@@ -43,27 +65,14 @@ export function OrdersList({ orders }: OrdersListProps) {
     });
   };
 
-  // Flatten orders into rows (one row per item for detailed view)
-  const orderRows = orders.flatMap((order) =>
-    order.items.map((item, idx) => ({
-      orderId: order.id,
-      date: order.orderDate,
-      itemName: item.productName,
-      qty: item.crates,
-      unitPrice: item.unitCost,
-      totalPrice: item.crates * item.unitCost,
-      amountPaid: idx === 0 ? order.depositAmount : 0, // Show deposit on first item row
-      balance: idx === 0 ? order.orderTotal - order.depositAmount : 0,
-      status: order.status,
-      isFirstItem: idx === 0,
-      itemCount: order.items.length,
-    }))
-  );
+  const formatItems = (items: CocaColaOrder['items']) => {
+    return items.map(item => `${item.productName} (${item.crates})`).join(', ');
+  };
 
   // Calculate totals
   const totalOrderValue = orders.reduce((sum, o) => sum + o.orderTotal, 0);
-  const totalPaid = orders.reduce((sum, o) => sum + o.depositAmount, 0);
-  const totalBalance = totalOrderValue - totalPaid;
+  const totalPaid = orders.reduce((sum, o) => sum + o.amountPaid, 0);
+  const totalBalance = orders.reduce((sum, o) => sum + o.balance, 0);
 
   return (
     <>
@@ -71,9 +80,9 @@ export function OrdersList({ orders }: OrdersListProps) {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold">Coca-Cola Orders</h2>
+            <h2 className="text-lg font-semibold">Orders</h2>
             <p className="text-sm text-muted-foreground">
-              Track your orders and deliveries from Coca-Cola
+              Track your orders and deliveries
             </p>
           </div>
           <Button onClick={() => setShowOrderDialog(true)}>
@@ -109,69 +118,74 @@ export function OrdersList({ orders }: OrdersListProps) {
                   <TableHeader>
                     <TableRow>
                       <TableHead>DATE</TableHead>
+                      <TableHead>NAME</TableHead>
                       <TableHead>ITEMS</TableHead>
-                      <TableHead className="text-right">QTY (Crates)</TableHead>
-                      <TableHead className="text-right">UNIT PRICE</TableHead>
-                      <TableHead className="text-right">TOTAL PRICE</TableHead>
-                      <TableHead className="text-right">AMOUNT PAID</TableHead>
+                      <TableHead className="text-right">PRICE</TableHead>
+                      <TableHead className="text-right">PAID</TableHead>
                       <TableHead className="text-right">BALANCE</TableHead>
-                      <TableHead className="text-center">ACTION</TableHead>
+                      <TableHead className="text-center">STATUS</TableHead>
+                      <TableHead className="text-center">ACTIONS</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {orderRows.map((row, index) => (
-                      <TableRow key={`${row.orderId}-${index}`}>
+                    {orders.map((order) => (
+                      <TableRow key={order.id}>
                         <TableCell className="font-medium">
-                          {row.isFirstItem ? formatDate(row.date) : ''}
+                          {formatDate(order.orderDate)}
                         </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {row.itemName}
-                            {row.isFirstItem && (
-                              <Badge
-                                variant="outline"
-                                className={
-                                  row.status === 'delivered'
-                                    ? 'bg-success/10 text-success border-success/30'
-                                    : row.status === 'confirmed'
-                                    ? 'bg-chart-1/10 text-chart-1 border-chart-1/30'
-                                    : 'bg-warning/10 text-warning border-warning/30'
-                                }
-                              >
-                                {row.status}
-                              </Badge>
-                            )}
-                          </div>
+                        <TableCell>{order.customerName}</TableCell>
+                        <TableCell className="max-w-[200px]">
+                          <span className="text-sm truncate block" title={formatItems(order.items)}>
+                            {formatItems(order.items)}
+                          </span>
                         </TableCell>
                         <TableCell className="text-right font-mono">
-                          {row.qty}
+                          {formatCurrency(order.orderTotal)}
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-success">
+                          {formatCurrency(order.amountPaid)}
                         </TableCell>
                         <TableCell className="text-right font-mono">
-                          {formatCurrency(row.unitPrice)}
-                        </TableCell>
-                        <TableCell className="text-right font-mono">
-                          {formatCurrency(row.totalPrice)}
-                        </TableCell>
-                        <TableCell className="text-right font-mono">
-                          {row.isFirstItem ? formatCurrency(row.amountPaid) : ''}
-                        </TableCell>
-                        <TableCell className="text-right font-mono">
-                          {row.isFirstItem ? (
-                            <span className={row.balance > 0 ? 'text-destructive' : 'text-success'}>
-                              {formatCurrency(row.balance)}
-                            </span>
-                          ) : ''}
+                          <span className={order.balance > 0 ? 'text-destructive' : 'text-success'}>
+                            {formatCurrency(order.balance)}
+                          </span>
                         </TableCell>
                         <TableCell className="text-center">
-                          {row.isFirstItem && row.status !== 'delivered' && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleMarkDelivered(row.orderId)}
-                            >
-                              <CheckCircle2 className="h-4 w-4" />
-                            </Button>
-                          )}
+                          <Badge
+                            variant="outline"
+                            className={
+                              order.isDelivered
+                                ? 'bg-success/10 text-success border-success/30'
+                                : 'bg-warning/10 text-warning border-warning/30'
+                            }
+                          >
+                            {order.isDelivered ? 'Delivered' : 'Pending'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              {!order.isDelivered && (
+                                <DropdownMenuItem onClick={() => handleMarkDelivered(order)}>
+                                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                                  Mark as Delivered
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem onClick={() => handleEdit(order)}>
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Edit Order
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleRecordPayment(order)}>
+                                <DollarSign className="mr-2 h-4 w-4" />
+                                Record Payment
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -204,6 +218,8 @@ export function OrdersList({ orders }: OrdersListProps) {
       </div>
 
       <CocaColaOrderDialog open={showOrderDialog} onOpenChange={setShowOrderDialog} />
+      <EditOrderDialog open={showEditDialog} onOpenChange={setShowEditDialog} order={selectedOrder} />
+      <RecordOrderPaymentDialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog} order={selectedOrder} />
     </>
   );
 }
