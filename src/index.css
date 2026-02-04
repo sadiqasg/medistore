@@ -6,69 +6,69 @@
 
 @layer base {
   :root {
-    /* MEDIS Warm Design System - Beige/Brown Tones */
-    --background: 40 30% 97%;
-    --foreground: 30 20% 12%;
+    /* MEDIS Clean Design System - White/Gray */
+    --background: 0 0% 98%;
+    --foreground: 220 15% 15%;
 
-    --card: 40 40% 99%;
-    --card-foreground: 30 20% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 15%;
 
-    --popover: 40 40% 99%;
-    --popover-foreground: 30 20% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 15%;
 
-    /* Warm brown primary - earthy trust */
-    --primary: 30 35% 28%;
-    --primary-foreground: 40 30% 97%;
+    /* Slate primary - professional and modern */
+    --primary: 220 15% 25%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 35 25% 92%;
-    --secondary-foreground: 30 35% 28%;
+    --secondary: 220 10% 95%;
+    --secondary-foreground: 220 15% 25%;
 
-    --muted: 35 20% 92%;
-    --muted-foreground: 30 15% 45%;
+    --muted: 220 10% 94%;
+    --muted-foreground: 220 10% 45%;
 
-    --accent: 35 25% 88%;
-    --accent-foreground: 30 20% 12%;
+    --accent: 220 10% 92%;
+    --accent-foreground: 220 15% 15%;
 
-    /* Warm red for alerts */
-    --destructive: 8 72% 48%;
+    /* Red for alerts */
+    --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Status colors - warmer tones */
+    /* Status colors */
     --success: 145 55% 38%;
     --success-foreground: 0 0% 100%;
-    --warning: 35 85% 50%;
-    --warning-foreground: 30 20% 12%;
-    --danger: 8 72% 48%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 220 15% 15%;
+    --danger: 0 72% 50%;
     --danger-foreground: 0 0% 100%;
 
     /* Metric accents */
     --metric-positive: 145 55% 42%;
-    --metric-negative: 8 72% 50%;
-    --metric-neutral: 30 15% 50%;
+    --metric-negative: 0 72% 50%;
+    --metric-neutral: 220 10% 50%;
 
-    --border: 35 20% 85%;
-    --input: 35 20% 85%;
-    --ring: 30 35% 35%;
+    --border: 220 10% 90%;
+    --input: 220 10% 90%;
+    --ring: 220 15% 35%;
 
     --radius: 0.625rem;
 
-    /* Chart colors - warm palette */
-    --chart-1: 30 40% 35%;
+    /* Chart colors */
+    --chart-1: 220 15% 30%;
     --chart-2: 145 55% 42%;
-    --chart-3: 35 85% 50%;
-    --chart-4: 8 72% 50%;
-    --chart-5: 320 50% 45%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 0 72% 50%;
+    --chart-5: 280 50% 45%;
 
-    /* Sidebar - warm dark brown */
-    --sidebar-background: 30 25% 12%;
-    --sidebar-foreground: 35 20% 70%;
-    --sidebar-primary: 40 30% 97%;
-    --sidebar-primary-foreground: 30 25% 12%;
-    --sidebar-accent: 30 25% 18%;
-    --sidebar-accent-foreground: 40 30% 97%;
-    --sidebar-border: 30 20% 20%;
-    --sidebar-ring: 35 60% 55%;
-    --sidebar-muted: 35 15% 55%;
+    /* Sidebar - clean light gray */
+    --sidebar-background: 220 10% 97%;
+    --sidebar-foreground: 220 10% 40%;
+    --sidebar-primary: 220 15% 20%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 220 10% 92%;
+    --sidebar-accent-foreground: 220 15% 20%;
+    --sidebar-border: 220 10% 88%;
+    --sidebar-ring: 220 15% 35%;
+    --sidebar-muted: 220 10% 55%;
   }
 
   .dark {
