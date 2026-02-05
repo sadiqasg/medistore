@@ -43,14 +43,14 @@ interface DashboardLayoutProps {
 
 const mainNavigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Inventory', href: '/inventory', icon: Package },
   { name: 'Orders', href: '/orders', icon: Truck },
   { name: 'Expenses', href: '/expenses', icon: Receipt },
   { name: 'Debt Tracking', href: '/debt', icon: CreditCard },
 ];
 
 const bottomNavigation = [
-  { name: 'History', href: '/history', icon: History },
+  { name: 'Inventory', href: '/inventory', icon: Package },
+  { name: 'Analysis', href: '/analysis', icon: History },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 

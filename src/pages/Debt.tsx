@@ -3,6 +3,7 @@ import { DebtTracker } from '@/components/debt/DebtTracker';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CustomerDebtList } from '@/components/debt/CustomerDebtList';
 import { OtherDebtList } from '@/components/debt/OtherDebtList';
+import { Users, Truck, Wallet } from 'lucide-react';
 
 export default function Debt() {
   return (
@@ -16,20 +17,44 @@ export default function Debt() {
           </p>
         </div>
 
-        {/* Tabs for supplier vs customer vs other debt */}
-        <Tabs defaultValue="supplier" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="supplier">Supplier Debt (Coca-Cola)</TabsTrigger>
-            <TabsTrigger value="customer">Customer Debt</TabsTrigger>
-            <TabsTrigger value="other">Other Debts</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="supplier" className="space-y-6">
-            <DebtTracker />
-          </TabsContent>
+        {/* Tabs for customer vs supplier vs other debt */}
+        <Tabs defaultValue="customer" className="space-y-6">
+          <div className="flex gap-2">
+            <TabsList className="h-auto p-1 bg-muted/50 rounded-xl">
+              <TabsTrigger 
+                value="customer" 
+                className="gap-2 px-4 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg"
+              >
+                <Users className="h-4 w-4" />
+                Customer Debt
+              </TabsTrigger>
+            </TabsList>
+            <TabsList className="h-auto p-1 bg-muted/50 rounded-xl">
+              <TabsTrigger 
+                value="supplier" 
+                className="gap-2 px-4 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg"
+              >
+                <Truck className="h-4 w-4" />
+                Supplier (Coca-Cola)
+              </TabsTrigger>
+            </TabsList>
+            <TabsList className="h-auto p-1 bg-muted/50 rounded-xl">
+              <TabsTrigger 
+                value="other" 
+                className="gap-2 px-4 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg"
+              >
+                <Wallet className="h-4 w-4" />
+                Other Debts
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="customer" className="space-y-6">
             <CustomerDebtList />
+          </TabsContent>
+
+          <TabsContent value="supplier" className="space-y-6">
+            <DebtTracker />
           </TabsContent>
 
           <TabsContent value="other" className="space-y-6">

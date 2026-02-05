@@ -85,10 +85,6 @@ export function ExpensesList() {
             {expenses.length} expense{expenses.length !== 1 ? 's' : ''} recorded
           </p>
         </div>
-        <Button size="sm" onClick={() => setShowNewExpense(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          New Expense
-        </Button>
       </div>
 
       {/* Expenses Table */}
@@ -100,7 +96,6 @@ export function ExpensesList() {
               <TableHead>Date</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead>Submitted By</TableHead>
               <TableHead className="text-right">Amount</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
@@ -155,9 +150,6 @@ export function ExpensesList() {
                       </div>
                     </TableCell>
                     <TableCell className="capitalize">{expense.category}</TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {expense.submittedBy.split('@')[0]}
-                    </TableCell>
                     <TableCell className="text-right font-mono tabular-nums font-semibold">
                       {formatCurrency(expense.totalAmount)}
                     </TableCell>
