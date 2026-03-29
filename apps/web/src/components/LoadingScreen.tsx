@@ -47,7 +47,7 @@ export function LoadingScreen({ onComplete, minDuration = 1500 }: LoadingScreenP
         <div className="flex flex-col items-center gap-4 text-center">
           <div className="space-y-1">
             <h2 className="text-2xl font-bold tracking-tighter text-foreground uppercase">MEDISTORE</h2>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em] opacity-60">Distribution</p>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em] opacity-60">HQ</p>
           </div>
 
           {/* Progress bar */}

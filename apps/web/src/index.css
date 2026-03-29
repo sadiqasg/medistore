@@ -1,8 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @layer base {
   :root {
@@ -105,6 +105,8 @@
     --warning: 45 93% 47%;
     --danger: 0 84% 60%;
 
+    --chart-1: 220 70% 55%; /* Vibrant blue for dark mode */
+
     --metric-positive: 142 70% 55%;
     --metric-negative: 0 84% 65%;
     --metric-neutral: 220 10% 60%;
@@ -173,11 +175,11 @@
 @layer components {
   /* Metric card styling */
   .metric-card {
-    @apply relative overflow-hidden rounded-xl border border-border bg-card p-5 shadow-sm transition-all duration-200;
+    @apply relative overflow-hidden rounded-xl border border-border bg-card p-5 shadow-lg border-white/40 dark:border-white/5 transition-all duration-300;
   }
   
   .metric-card:hover {
-    @apply shadow-md border-border/80;
+    @apply shadow-2xl border-primary/20 -translate-y-1;
   }
 
   .metric-card::before {

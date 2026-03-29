@@ -24,8 +24,18 @@ import {
   TrendingUp,
   Users,
   CreditCard,
+  History,
 } from 'lucide-react';
 import { RecordPaymentDialog } from './RecordPaymentDialog';
+
+import { CustomerEntryTable } from '@/components/CustomerEntryTable';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 const statusStyles = {
   current: 'bg-success/10 text-success border-success/30',
@@ -35,7 +45,9 @@ const statusStyles = {
 
 export function CustomerDebtList() {
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | undefined>();
+  const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null);
 
   // Calculate customer debt data with additional fields
   const customerData = mockCustomerDebts.map(customer => {
@@ -44,11 +56,36 @@ export function CustomerDebtList() {
     const amountPaid = totalAmount - customer.totalOwed;
     const percentNotPaid = totalAmount > 0 ? (customer.totalOwed / totalAmount) * 100 : 0;
     
+    // Mock robust transactions for the details table
+    const mockTransactions = [
+      {
+        date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+        supply: 'Coca-Cola 35cl, Fanta 35cl',
+        items_number: 12,
+        unit: 'Crates',
+        total: 15600,
+        amount_paid: 10000,
+        balance: 5600,
+        payment_method: 'cash'
+      },
+      {
+        date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+        supply: 'Sprite 50cl',
+        items_number: 5,
+        unit: 'Crates',
+        total: 8400,
+        amount_paid: 4000,
+        balance: 10000,
+        payment_method: 'bank'
+      }
+    ];
+
     return {
       ...customer,
       totalAmount,
       amountPaid,
       percentNotPaid,
+      transactions: mockTransactions
     };
   });
 
@@ -73,6 +110,11 @@ export function CustomerDebtList() {
   const handleRecordPayment = (customerId?: string) => {
     setSelectedCustomerId(customerId);
     setShowPaymentDialog(true);
+  };
+
+  const handleViewDetails = (customer: any) => {
+    setSelectedCustomer(customer);
+    setShowDetailsDialog(true);
   };
 
   return (
@@ -184,6 +226,9 @@ export function CustomerDebtList() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{customer.customerName}</span>
+                          <Badge variant="outline" className={cn('text-[10px] h-5 uppercase tracking-wider px-1.5', customer.isRecurring ? 'bg-primary/10 text-primary border-primary/30' : 'bg-muted text-muted-foreground border-muted-foreground/30')}>
+                            {customer.isRecurring ? 'Recurring' : 'One-off'}
+                          </Badge>
                           <Badge variant="outline" className={cn('text-xs', statusStyles[customer.status])}>
                             {customer.status}
                           </Badge>
@@ -214,11 +259,20 @@ export function CustomerDebtList() {
                       <TableCell className="text-right font-mono">
                         {overallDebtPercent.toFixed(1)}%
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right space-x-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleViewDetails(customer)}
+                          className="h-8 px-2 text-xs font-semibold hover:bg-primary/5 hover:text-primary transition-colors"
+                        >
+                          Statement
+                        </Button>
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleRecordPayment(customer.id)}
+                          className="h-8 px-3"
                         >
                           Pay
                         </Button>
@@ -252,11 +306,41 @@ export function CustomerDebtList() {
         </Card>
       </div>
 
-      <RecordPaymentDialog 
-        open={showPaymentDialog} 
-        onOpenChange={setShowPaymentDialog}
-        preselectedCustomerId={selectedCustomerId}
-      />
+      <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl glass-card">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-3">
+              <History className="h-5 w-5 text-primary" />
+              Account Statement: {selectedCustomer?.customerName}
+            </DialogTitle>
+            <DialogDescription>
+              Detailed transaction history and balance tracking for {selectedCustomer?.customerName}.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="mt-6">
+             <CustomerEntryTable transactions={selectedCustomer?.transactions || []} />
+          </div>
+
+          <div className="mt-6 flex flex-col sm:flex-row justify-between items-center bg-muted/30 p-4 rounded-xl border border-border/50 gap-4">
+             <div className="flex flex-col">
+                <span className="text-xs text-muted-foreground uppercase tracking-widest font-bold">Current Debt</span>
+                <span className="text-xl font-mono font-bold text-destructive">
+                  {selectedCustomer ? formatCurrency(selectedCustomer.totalOwed) : '₦0'}
+                </span>
+             </div>
+             <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setShowDetailsDialog(false)}>Close</Button>
+                <Button onClick={() => {
+                  setShowDetailsDialog(false);
+                  handleRecordPayment(selectedCustomer?.id);
+                }}>
+                  Record Payment
+                </Button>
+             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

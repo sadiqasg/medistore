@@ -31,7 +31,7 @@ const actions = [
   {
     name: 'View History',
     description: 'Sales & expense records',
-    href: '/history',
+    href: '/analysis',
     icon: FileText,
     color: 'bg-chart-5/10 text-chart-5 hover:bg-chart-5/20',
     action: 'navigate',

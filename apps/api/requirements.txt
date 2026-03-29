@@ -8,3 +8,6 @@ fastapi-csrf-protect
 passlib[bcrypt]
 python-jose[cryptography]
 python-multipart
+gunicorn
+uvloop
+httptools

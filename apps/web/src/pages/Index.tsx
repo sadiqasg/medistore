@@ -37,21 +37,21 @@ export default function Dashboard() {
             icon={Banknote}
             trend={{ value: 8.2, label: 'vs yesterday' }}
             variant="success"
-            href="/history"
+            href="/analysis"
           />
           <MetricCard
             title="Net Profit"
             value={formatCurrency(dashboardKPIs.todayNetProfit)}
             icon={TrendingUp}
             trend={{ value: 12.5, label: 'vs yesterday' }}
-            href="/history"
+            href="/analysis"
           />
           <MetricCard
             title="Transactions"
             value={dashboardKPIs.todayTransactions}
             icon={ShoppingCart}
             trend={{ value: -3.1, label: 'vs yesterday' }}
-            href="/history"
+            href="/analysis"
           />
           <MetricCard
             title="Low Stock Items"
@@ -71,7 +71,7 @@ export default function Dashboard() {
             subtitle={`${formatCurrency(dashboardKPIs.weekNetProfit)} net profit`}
             icon={Banknote}
             trend={{ value: 15.3, label: 'vs last week' }}
-            href="/history"
+            href="/analysis"
           />
           <MetricCard
             title="Total Debt Outstanding"

@@ -14,6 +14,7 @@ import Analysis from "./pages/Analysis";
 import Debt from "./pages/Debt";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
+import FinancialDashboard from "./pages/FinancialDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const App = () => {
               <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
               <Route path="/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
               <Route path="/analysis" element={<ProtectedRoute><Analysis /></ProtectedRoute>} />
+              <Route path="/financials" element={<ProtectedRoute><FinancialDashboard /></ProtectedRoute>} />
               <Route path="/debt" element={<ProtectedRoute><Debt /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
 

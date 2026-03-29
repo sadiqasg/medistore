@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { mockUser, mockNotifications } from '@/lib/mockData';
+import { api } from '@/lib/api';
+import { mockNotifications } from '@/lib/mockData';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { toast } from 'sonner';
 import {
@@ -20,6 +21,8 @@ import {
   AlertTriangle,
   Info,
   Truck,
+  Wallet,
+  Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -46,7 +49,8 @@ const mainNavigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Orders', href: '/orders', icon: Truck },
   { name: 'Expenses', href: '/expenses', icon: Receipt },
-  { name: 'Debt Tracking', href: '/debt', icon: CreditCard },
+  { name: 'Financials', href: '/financials', icon: Wallet },
+  { name: 'Customer Ledger', href: '/debt', icon: Users },
 ];
 
 const bottomNavigation = [
@@ -71,9 +75,28 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBtn, setShowInstallBtn] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [settings, setSettings] = useState<any>(null);
+  
   const location = useLocation();
   const navigate = useNavigate();
-  
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [userRes, settingsRes] = await Promise.all([
+          api.get('/auth/me'),
+          api.get('/settings')
+        ]);
+        setUser(userRes.data);
+        setSettings(settingsRes.data);
+      } catch (error) {
+        console.error('Failed to fetch layout data:', error);
+      }
+    };
+    fetchData();
+  }, []);
+
   // Handle PWA installation
   useState(() => {
     const handler = (e: any) => {
@@ -103,11 +126,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const unreadNotifications = mockNotifications.filter((n) => !n.read);
 
-  const initials = mockUser.name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase();
+  const initials = user?.name
+    ? user.name
+        .split(' ')
+        .map((n: string) => n[0])
+        .join('')
+        .toUpperCase()
+    : '??';
 
   return (
     <div className="min-h-screen bg-background selection:bg-primary/10">
@@ -131,11 +156,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex h-20 items-center justify-between px-6 border-b border-sidebar-border/30">
             <Link to="/" className="flex items-center gap-3 group">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sidebar-primary/5 p-1 transition-transform group-hover:scale-105">
-                <img src="/logo.png" alt="Medistore Logo" className="h-full w-full object-contain" />
+                <img src={settings?.logo_url || "/logo.png"} alt="Medistore Logo" className="h-full w-full object-contain" />
               </div>
               <div className="flex flex-col">
-                <span className="text-lg font-bold tracking-tight text-sidebar-primary leading-none">MEDISTORE</span>
-                <span className="text-[10px] text-sidebar-muted font-medium uppercase tracking-widest mt-1">Distribution</span>
+                <span className="text-lg font-bold tracking-tight text-sidebar-primary leading-none">
+                  {settings?.company_name || "MEDISTORE"}
+                </span>
+                <span className="text-[10px] text-sidebar-muted font-medium uppercase tracking-widest mt-1">HQ</span>
               </div>
             </Link>
             <Button
@@ -158,17 +185,20 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     key={item.name}
                     to={item.href}
                     className={cn(
-                      'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                      'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all group/nav relative',
                       isActive
-                        ? 'bg-sidebar-accent text-sidebar-primary shadow-sm'
+                        ? 'bg-primary/10 text-primary shadow-md'
                         : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-primary'
                     )}
                     onClick={() => setSidebarOpen(false)}
                   >
-                    <item.icon className={cn('h-5 w-5', isActive ? 'text-primary' : 'text-sidebar-muted')} />
+                    {isActive && (
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full" />
+                    )}
+                    <item.icon className={cn('h-5 w-5 transition-transform group-hover/nav:scale-110', isActive ? 'text-primary' : 'text-sidebar-muted')} />
                     {item.name}
                     {item.name === 'Expenses' && (
-                       <Badge variant="destructive" className="ml-auto text-[10px] px-1.5 py-0">
+                      <Badge variant="destructive" className="ml-auto text-[10px] px-1.5 py-0">
                         2
                       </Badge>
                     )}
@@ -176,10 +206,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 );
               })}
             </div>
-            
+
             {/* Divider */}
             <div className="my-4 border-t border-sidebar-border/30" />
-            
+
             {/* Bottom navigation */}
             <div className="space-y-1.5">
               {bottomNavigation.map((item) => {
@@ -189,14 +219,17 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     key={item.name}
                     to={item.href}
                     className={cn(
-                      'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                      'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all group/nav relative',
                       isActive
-                        ? 'bg-sidebar-accent text-sidebar-primary shadow-sm'
+                        ? 'bg-primary/10 text-primary shadow-md'
                         : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-primary'
                     )}
                     onClick={() => setSidebarOpen(false)}
                   >
-                    <item.icon className={cn('h-5 w-5', isActive ? 'text-primary' : 'text-sidebar-muted')} />
+                    {isActive && (
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full" />
+                    )}
+                    <item.icon className={cn('h-5 w-5 transition-transform group-hover/nav:scale-110', isActive ? 'text-primary' : 'text-sidebar-muted')} />
                     {item.name}
                   </Link>
                 );
@@ -216,10 +249,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-sidebar-primary truncate leading-tight">
-                      {mockUser.name}
+                      {user?.name || "Loading..."}
                     </p>
                     <p className="text-[10px] text-sidebar-muted font-medium uppercase tracking-wider truncate mt-0.5">
-                      {mockUser.role}
+                      {user?.role || "user"}
                     </p>
                   </div>
                   <ChevronDown className="h-4 w-4 text-sidebar-muted group-hover:text-sidebar-primary transition-colors" />
@@ -227,8 +260,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" side="right" sideOffset={10} className="w-56 glass-card border-sidebar-border/40 rounded-2xl p-2 shadow-2xl">
                 <div className="px-3 py-2 mb-2">
-                  <p className="text-sm font-bold text-sidebar-primary">{mockUser.name}</p>
-                  <p className="text-[10px] font-medium text-sidebar-muted uppercase tracking-widest mt-1">{mockUser.email}</p>
+                  <p className="text-sm font-bold text-sidebar-primary">{user?.name}</p>
+                  <p className="text-[10px] font-medium text-sidebar-muted uppercase tracking-widest mt-1">{user?.email}</p>
                 </div>
                 <DropdownMenuSeparator className="bg-sidebar-border/30" />
                 <DropdownMenuItem className="rounded-xl focus:bg-sidebar-accent/50 cursor-pointer py-2.5" onClick={handleLogout}>
@@ -254,7 +287,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             >
               <Menu className="h-5 w-5" />
             </Button>
-            
+
             {/* Page title or breadcrumb placeholder */}
             <h2 className="hidden md:block text-sm font-semibold text-muted-foreground uppercase tracking-widest">
               {location.pathname === '/' ? 'Overview' : location.pathname.split('/')[1]}
@@ -264,7 +297,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex items-center gap-2 md:gap-4">
             {/* PWA Install Button */}
             {showInstallBtn && (
-              <Button 
+              <Button
                 onClick={handleInstallClick}
                 variant="outline"
                 size="sm"
@@ -277,7 +310,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
             <div className="flex items-center gap-2">
               <ThemeToggle />
-              
+
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="ghost" size="icon" className="relative hover:bg-accent/50">

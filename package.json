@@ -9,8 +9,10 @@
     "dev": "concurrently -n \"web,api\" -c \"cyan,green\" \"yarn web:dev\" \"yarn api:dev\"",
     "web:dev": "yarn workspace web dev",
     "web:build": "yarn workspace web build",
-    "api:dev": "cd apps/api && ./venv/bin/uvicorn main:app --reload",
-    "api:install": "cd apps/api && ./venv/bin/pip install -r requirements.txt"
+    "api:dev": "cd apps/api && ./venv/bin/python -m uvicorn main:app --reload",
+    "api:install": "cd apps/api && ./venv/bin/python -m pip install -r requirements.txt",
+    "api:seed": "cd apps/api && ./venv/bin/python seed.py",
+    "api:seed:prod": "export $(grep -v '^#' apps/api/.env | xargs) && cd apps/api && DATABASE_URL=$PROD_DATABASE_URL ./venv/bin/python seed.py"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

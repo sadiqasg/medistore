@@ -99,6 +99,7 @@ export interface CustomerDebt {
   maxDebtAllowed: number;
   sales: SaleRecord[];
   status: 'current' | 'warning' | 'exceeded';
+  isRecurring: boolean;
 }
 
 export interface DailySummary {
@@ -497,6 +498,7 @@ export const mockCustomerDebts: CustomerDebt[] = [
     maxDebtAllowed: 50000,
     sales: [],
     status: 'warning',
+    isRecurring: true,
   },
   {
     id: 'CD002',
@@ -506,6 +508,7 @@ export const mockCustomerDebts: CustomerDebt[] = [
     maxDebtAllowed: 50000,
     sales: [],
     status: 'current',
+    isRecurring: false,
   },
   {
     id: 'CD003',
@@ -515,6 +518,7 @@ export const mockCustomerDebts: CustomerDebt[] = [
     maxDebtAllowed: 50000,
     sales: [],
     status: 'exceeded',
+    isRecurring: true,
   },
 ];
 
