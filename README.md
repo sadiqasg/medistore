@@ -5,7 +5,7 @@ Welcome to the Medistore command center. This project is organized as a monorepo
 ## Structure
 
 - `apps/web`: The React + Vite frontend application.
-- `apps/api`: The NestJS backend application.
+- `apps/api`: The Python FastAPI backend application.
 
 ## Prerequisites
 
@@ -58,4 +58,11 @@ To get started:
 1. Create a project on [Supabase](https://supabase.com/).
 2. Add your `DATABASE_URL` to a `.env` file in `apps/api`.
 3. The tables will be automatically created on startup.
+
+## Frontend Configuration
+
+The frontend uses **Vite** and communicates with the backend via **Axios**.
+1. The API URL is configured in `apps/web/.env` via `VITE_API_URL`.
+2. A centralized API client is available at `apps/web/src/lib/api.ts`.
+3. It includes automatic CSRF handling (expects a CSRF token from the backend).
 

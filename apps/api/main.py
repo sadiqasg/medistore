@@ -1,19 +1,104 @@
-from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi import FastAPI, Depends, HTTPException, Query, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastapi_csrf_protect import CsrfProtect
+from fastapi_csrf_protect.exceptions import CsrfProtectError
+from pydantic import BaseModel
 from sqlmodel import Session, select
 from typing import List, Optional
 from datetime import datetime
-from .database import create_db_and_tables, get_session
-from .models import Product, Customer, Order, OrderItem, Supply
+import os
+
+from database import create_db_and_tables, get_session
+from models import Product, Customer, Order, OrderItem, Supply, Expense, OrderCreate, User, Token, UserRead, PasswordReset
+from auth import authenticate_user, create_access_token, get_current_user, get_password_hash, verify_password
+from fastapi.security import OAuth2PasswordRequestForm
 
 app = FastAPI(title="Medistore API")
+
+# --- CORS Configuration ---
+origins = os.getenv("CORS_ORIGINS", "http://localhost:8080").split(",")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# --- CSRF Configuration ---
+class CsrfSettings(BaseModel):
+    secret_key: str = os.getenv("CSRF_SECRET_KEY", "secret")
+
+@CsrfProtect.load_config
+def get_csrf_settings():
+    return CsrfSettings()
+
+@app.exception_handler(CsrfProtectError)
+def csrf_protect_exception_handler(request: Request, exc: CsrfProtectError):
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
+
+@app.get("/csrf-token")
+async def get_csrf_token(csrf_protect: CsrfProtect = Depends()):
+    token, signed_token = csrf_protect.generate_csrf_tokens()
+    response = JSONResponse(content={"csrf_token": token})
+    csrf_protect.set_csrf_cookie(signed_token, response)
+    return response
 
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
+    # Seed initial admin
+    with Session(create_db_and_tables.engine if hasattr(create_db_and_tables, 'engine') else next(get_session()).bind) as session:
+        admin_email = "abulex7@yahoo.com"
+        admin = session.exec(select(User).where(User.email == admin_email)).first()
+        if not admin:
+            admin = User(
+                email=admin_email,
+                name="Admin User",
+                hashed_password=get_password_hash("admin01"),
+                role="admin"
+            )
+            session.add(admin)
+            session.commit()
 
 @app.get("/")
 def read_root():
     return {"message": "Welcome to Medistore API"}
+
+# --- Auth Endpoints ---
+
+@app.post("/auth/login", response_model=Token)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
+    user = session.exec(select(User).where(User.email == form_data.username)).first()
+    if not user or not verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token = create_access_token(data={"sub": user.email})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@app.get("/auth/me", response_model=UserRead)
+async def read_users_me(current_user: User = Depends(get_current_user)):
+    return current_user
+
+@app.post("/auth/reset-password")
+async def reset_password(
+    data: PasswordReset,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    if not verify_password(data.current_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Incorrect current password")
+    
+    current_user.hashed_password = get_password_hash(data.new_password)
+    session.add(current_user)
+    session.commit()
+    return {"message": "Password updated successfully"}
+
+
 
 # --- Module A: Inventory & Supply Management ---
 
@@ -92,46 +177,63 @@ def record_payment(customer_id: int, amount: float, session: Session = Depends(g
 # --- Module C: Sales & Order Processing ---
 
 @app.post("/orders", response_model=Order)
-def create_order(order_data: Order, items: List[OrderItem], session: Session = Depends(get_session)):
-    customer = session.get(Customer, order_data.customer_id)
+def create_order(
+    order_payload: OrderCreate, 
+    request: Request,
+    csrf_protect: CsrfProtect = Depends(),
+    session: Session = Depends(get_session)
+):
+    # CSRF Validation
+    csrf_protect.validate_csrf(request)
+    
+    customer = session.get(Customer, order_payload.customer_id)
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
     
+    # Create the order object
+    db_order = Order(
+        customer_id=order_payload.customer_id,
+        amount_paid=order_payload.amount_paid,
+        total_amount=0, # Will be calculated
+        status="completed",
+        created_at=datetime.utcnow()
+    )
+    session.add(db_order)
+    session.flush() # Get the order ID
+    
     total = 0
     # Process items and deduct inventory
-    for item in items:
-        product = session.get(Product, item.product_id)
+    for item_data in order_payload.items:
+        product = session.get(Product, item_data.product_id)
         if not product:
-            raise HTTPException(status_code=400, detail=f"Product {item.product_id} not found")
-        if product.stock_quantity < item.quantity:
+            raise HTTPException(status_code=400, detail=f"Product {item_data.product_id} not found")
+        if product.stock_quantity < item_data.quantity:
             raise HTTPException(status_code=400, detail=f"Insufficient stock for {product.name}")
         
-        product.stock_quantity -= item.quantity
-        item.price_at_time_of_sale = product.unit_price
-        total += item.price_at_time_of_sale * item.quantity
+        product.stock_quantity -= item_data.quantity
+        
+        db_item = OrderItem(
+            order_id=db_order.id,
+            product_id=product.id,
+            quantity=item_data.quantity,
+            price_at_time_of_sale=product.unit_price
+        )
+        total += db_item.price_at_time_of_sale * db_item.quantity
         session.add(product)
+        session.add(db_item)
     
-    order_data.total_amount = total
-    order_data.created_at = datetime.utcnow()
+    db_order.total_amount = total
     
     # Calculate debt
-    unpaid = total - order_data.amount_paid
+    unpaid = total - order_payload.amount_paid
     if unpaid > 0:
         customer.current_debt += unpaid
         session.add(customer)
     
-    session.add(order_data)
+    session.add(db_order)
     session.commit()
-    session.refresh(order_data)
-    
-    # Associate items with order
-    for item in items:
-        item.order_id = order_data.id
-        session.add(item)
-    
-    session.commit()
-    session.refresh(order_data)
-    return order_data
+    session.refresh(db_order)
+    return db_order
 
 # --- Module D: Profit & Margin Engine ---
 

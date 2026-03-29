@@ -62,3 +62,41 @@ class Expense(SQLModel, table=True):
     category: str  # fuel, electricity, wages, etc.
     date: datetime = Field(default_factory=datetime.utcnow)
 
+# --- Pydantic Schemas for API Requests ---
+
+class OrderItemBase(SQLModel):
+    product_id: int
+    quantity: int
+
+class OrderCreate(SQLModel):
+    customer_id: int
+    amount_paid: float
+    items: List[OrderItemBase]
+
+# --- Auth Models ---
+
+class User(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    email: str = Field(index=True, unique=True)
+    name: str
+    hashed_password: str
+    role: str = "admin"
+    is_active: bool = True
+
+class UserRead(SQLModel):
+    id: int
+    email: str
+    name: str
+    role: str
+
+class Token(SQLModel):
+    access_token: str
+    token_type: str
+
+class TokenData(SQLModel):
+    email: Optional[str] = None
+
+class PasswordReset(SQLModel):
+    current_password: str
+    new_password: str
+

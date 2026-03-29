@@ -59,63 +59,98 @@
     --chart-4: 0 72% 50%;
     --chart-5: 280 50% 45%;
 
-    /* Sidebar - clean light gray */
-    --sidebar-background: 220 10% 97%;
-    --sidebar-foreground: 220 10% 40%;
-    --sidebar-primary: 220 15% 20%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 220 10% 92%;
-    --sidebar-accent-foreground: 220 15% 20%;
-    --sidebar-border: 220 10% 88%;
-    --sidebar-ring: 220 15% 35%;
+    /* Sidebar - Premium deep slate with glass possibility */
+    --sidebar-background: 220 15% 98%;
+    --sidebar-foreground: 220 15% 35%;
+    --sidebar-primary: 220 20% 15%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 15% 94%;
+    --sidebar-accent-foreground: 220 20% 15%;
+    --sidebar-border: 220 15% 90%;
+    --sidebar-ring: 220 20% 30%;
     --sidebar-muted: 220 10% 55%;
+
+    /* Glassmorphism effects */
+    --glass-opacity: 0.7;
+    --glass-blur: 12px;
   }
 
   .dark {
-    /* True dark/black for dark mode */
-    --background: 0 0% 4%;
-    --foreground: 0 0% 95%;
+    /* Deep premium dark mode */
+    --background: 220 25% 4%;
+    --foreground: 220 10% 98%;
 
-    --card: 0 0% 7%;
-    --card-foreground: 0 0% 95%;
+    --card: 220 25% 7%;
+    --card-foreground: 220 10% 98%;
 
-    --popover: 0 0% 7%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 220 25% 7%;
+    --popover-foreground: 220 10% 98%;
 
-    --primary: 35 25% 70%;
-    --primary-foreground: 0 0% 5%;
+    --primary: 35 100% 65%; /* Vibrant orange/gold accent */
+    --primary-foreground: 220 25% 4%;
 
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 220 20% 12%;
+    --secondary-foreground: 220 10% 98%;
 
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 220 20% 12%;
+    --muted-foreground: 220 10% 60%;
 
-    --accent: 0 0% 14%;
-    --accent-foreground: 0 0% 95%;
+    --accent: 220 20% 15%;
+    --accent-foreground: 220 10% 98%;
 
-    --destructive: 0 72% 55%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 145 55% 48%;
-    --warning: 35 85% 55%;
-    --danger: 0 72% 55%;
+    --success: 142 70% 45%;
+    --warning: 45 93% 47%;
+    --danger: 0 84% 60%;
 
-    --metric-positive: 145 55% 52%;
-    --metric-negative: 0 72% 58%;
-    --metric-neutral: 0 0% 60%;
+    --metric-positive: 142 70% 55%;
+    --metric-negative: 0 84% 65%;
+    --metric-neutral: 220 10% 60%;
 
-    --border: 0 0% 16%;
-    --input: 0 0% 16%;
-    --ring: 35 25% 60%;
+    --border: 220 20% 15%;
+    --input: 220 20% 15%;
+    --ring: 35 100% 65%;
 
-    --sidebar-background: 0 0% 3%;
-    --sidebar-foreground: 0 0% 65%;
-    --sidebar-primary: 0 0% 95%;
-    --sidebar-primary-foreground: 0 0% 5%;
-    --sidebar-accent: 0 0% 10%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 0 0% 12%;
+    --sidebar-background: 220 25% 3%;
+    --sidebar-foreground: 220 10% 65%;
+    --sidebar-primary: 220 10% 98%;
+    --sidebar-primary-foreground: 220 25% 4%;
+    --sidebar-accent: 220 20% 10%;
+    --sidebar-accent-foreground: 220 10% 98%;
+    --sidebar-border: 220 20% 12%;
+
+    /* Glassmorphism effects dark */
+    --glass-opacity: 0.5;
+    --glass-blur: 16px;
+  }
+}
+
+@layer components {
+  /* Glassmorphism Utilities */
+  .glass-card {
+    @apply bg-card/60 backdrop-blur-md border-white/10 dark:border-white/5;
+  }
+
+  .glass-sidebar {
+    @apply bg-sidebar/80 backdrop-blur-xl border-r border-sidebar-border/50;
+  }
+
+  .glass-navbar {
+    @apply sticky top-0 z-40 w-full bg-background/70 backdrop-blur-lg border-b border-border/40;
+  }
+
+  /* Wavy Pattern background */
+  .wavy-pattern {
+    mask-image: url("data:image/svg+xml,%3Csvg width='100' height='20' viewBox='0 0 100 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 10 Q 25 20 50 10 T 100 10' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E");
+    mask-size: 100px 20px;
+    mask-repeat: repeat;
+  }
+
+  .wavy-bg {
+    background-image: radial-gradient(at 100% 0%, hsla(var(--primary) / 0.15) 0%, transparent 50%),
+                      radial-gradient(at 0% 100%, hsla(var(--primary) / 0.1) 0%, transparent 50%);
   }
 }
 

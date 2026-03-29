@@ -26,20 +26,6 @@ export function MetricCard({
   className,
   href,
 }: MetricCardProps) {
-  const variantStyles = {
-    default: 'border-border',
-    success: 'border-success/30 bg-success/5',
-    warning: 'border-warning/30 bg-warning/5',
-    danger: 'border-danger/30 bg-danger/5',
-  };
-
-  const iconStyles = {
-    default: 'bg-primary/10 text-primary',
-    success: 'bg-success/20 text-success',
-    warning: 'bg-warning/20 text-warning',
-    danger: 'bg-danger/20 text-danger',
-  };
-
   const getTrendIcon = () => {
     if (!trend) return null;
     if (trend.value > 0) return TrendingUp;
@@ -49,61 +35,100 @@ export function MetricCard({
 
   const TrendIcon = getTrendIcon();
 
+  const variantStyles = {
+    default: 'border-border/50 hover:border-primary/30',
+    success: 'border-success/20 hover:border-success/40',
+    warning: 'border-warning/20 hover:border-warning/40',
+    danger: 'border-danger/20 hover:border-danger/40',
+  };
+
+  const iconStyles = {
+    default: 'bg-primary/10 text-primary shadow-[0_0_15px_rgba(var(--primary),0.1)]',
+    success: 'bg-success/15 text-success shadow-[0_0_15px_rgba(var(--success),0.2)]',
+    warning: 'bg-warning/15 text-warning shadow-[0_0_15px_rgba(var(--warning),0.2)]',
+    danger: 'bg-danger/15 text-danger shadow-[0_0_15px_rgba(var(--danger),0.2)]',
+  };
+
+  const wavyStyles = {
+    default: 'opacity-[0.03] dark:opacity-[0.05]',
+    success: 'text-success opacity-[0.07]',
+    warning: 'text-warning opacity-[0.07]',
+    danger: 'text-danger opacity-[0.07]',
+  };
+
   const cardContent = (
-    <>
+    <div className="relative z-10">
       <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="text-2xl font-semibold tracking-tight font-mono tabular-nums">
-            {value}
-          </p>
+        <div className="space-y-1.5">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80">{title}</p>
+          <div className="flex items-baseline gap-1">
+            <p className="text-3xl font-bold tracking-tight font-mono tabular-nums">
+              {value}
+            </p>
+          </div>
           {subtitle && (
-            <p className="text-xs text-muted-foreground">{subtitle}</p>
+            <p className="text-xs text-muted-foreground font-medium">{subtitle}</p>
           )}
         </div>
         {Icon && (
           <div
             className={cn(
-              'flex h-10 w-10 items-center justify-center rounded-lg',
+              'flex h-12 w-12 items-center justify-center rounded-2xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3',
               iconStyles[variant]
             )}
           >
-            <Icon className="h-5 w-5" />
+            <Icon className="h-6 w-6 stroke-[2.5px]" />
           </div>
         )}
       </div>
 
       {trend && TrendIcon && (
-        <div className="mt-3 flex items-center gap-1.5">
+        <div className="mt-4 flex items-center gap-2">
           <div
             className={cn(
-              'flex items-center gap-0.5 text-xs font-medium',
-              trend.value > 0 && 'text-metric-positive',
-              trend.value < 0 && 'text-metric-negative',
-              trend.value === 0 && 'text-metric-neutral'
+              'flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold shadow-sm',
+              trend.value > 0 && 'bg-success/10 text-success',
+              trend.value < 0 && 'bg-danger/10 text-danger',
+              trend.value === 0 && 'bg-muted/10 text-muted-foreground'
             )}
           >
-            <TrendIcon className="h-3.5 w-3.5" />
+            <TrendIcon className="h-3 w-3" />
             <span>{Math.abs(trend.value)}%</span>
           </div>
           {trend.label && (
-            <span className="text-xs text-muted-foreground">{trend.label}</span>
+            <span className="text-[10px] font-medium text-muted-foreground/70 uppercase tracking-tight">
+              {trend.label}
+            </span>
           )}
         </div>
       )}
-    </>
+    </div>
   );
 
   const cardClasses = cn(
-    'metric-card rounded-xl border bg-card p-5 shadow-sm transition-shadow hover:shadow-md animate-fade-in block',
+    'metric-card group relative overflow-hidden rounded-[2rem] border bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5',
     variantStyles[variant],
     href && 'cursor-pointer',
     className
   );
 
+  const wavyPattern = (
+    <div className={cn("absolute inset-0 pointer-events-none transition-opacity duration-500", wavyStyles[variant])}>
+      <svg className="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path 
+          d="M0 20 Q 25 40 50 20 T 100 20 V 100 H 0 Z" 
+          fill="currentColor" 
+          className="animate-pulse-subtle" 
+          style={{ animationDuration: '4s' }}
+        />
+      </svg>
+    </div>
+  );
+
   if (href) {
     return (
       <Link to={href} className={cardClasses}>
+        {wavyPattern}
         {cardContent}
       </Link>
     );
@@ -111,6 +136,7 @@ export function MetricCard({
 
   return (
     <div className={cardClasses}>
+      {wavyPattern}
       {cardContent}
     </div>
   );

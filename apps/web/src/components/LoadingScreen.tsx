@@ -34,27 +34,42 @@ export function LoadingScreen({ onComplete, minDuration = 1500 }: LoadingScreenP
         fadeOut && 'opacity-0 pointer-events-none'
       )}
     >
-      <div className="flex flex-col items-center gap-6">
+      <div className="flex flex-col items-center gap-8 animate-in fade-in zoom-in duration-1000">
         {/* Logo */}
-        <div className="flex items-center gap-3 animate-pulse">
-          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary">
-            <span className="text-2xl font-bold text-primary-foreground">M</span>
+        <div className="relative group">
+          <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/5 p-2 shadow-2xl shadow-primary/10 transition-transform group-hover:scale-110">
+            <img src="/logo.png" alt="Medistore Logo" className="h-full w-full object-contain animate-pulse-subtle" />
           </div>
-          <span className="text-3xl font-bold text-foreground">MEDIS</span>
+          {/* Decorative ring */}
+          <div className="absolute inset-0 rounded-2xl border-2 border-primary/20 animate-ping opacity-20" />
         </div>
 
-        {/* Progress bar */}
-        <div className="w-48 h-1.5 bg-muted rounded-full overflow-hidden">
-          <div
-            className="h-full bg-primary rounded-full transition-all duration-100 ease-out"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-bold tracking-tighter text-foreground uppercase">MEDISTORE</h2>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em] opacity-60">Distribution</p>
+          </div>
 
-        {/* Loading text */}
-        <p className="text-sm text-muted-foreground animate-pulse">
-          Loading your dashboard...
-        </p>
+          {/* Progress bar */}
+          <div className="w-56 h-1 bg-muted/30 rounded-full overflow-hidden relative">
+            <div
+              className="h-full bg-primary rounded-full transition-all duration-300 ease-out shadow-[0_0_10px_rgba(var(--primary),0.5)]"
+              style={{ width: `${progress}%` }}
+            />
+            {/* Wavy overlay effect */}
+            <div className="absolute inset-0 wavy-pattern opacity-20" />
+          </div>
+
+          {/* Loading text */}
+          <div className="flex items-center gap-2">
+            <div className="h-1 w-1 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
+            <div className="h-1 w-1 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
+            <div className="h-1 w-1 rounded-full bg-primary animate-bounce" />
+            <p className="text-[11px] font-bold text-muted-foreground/80 uppercase tracking-widest ml-1">
+              Initializing
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

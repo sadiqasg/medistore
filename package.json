@@ -9,8 +9,8 @@
     "dev": "concurrently -n \"web,api\" -c \"cyan,green\" \"yarn web:dev\" \"yarn api:dev\"",
     "web:dev": "yarn workspace web dev",
     "web:build": "yarn workspace web build",
-    "api:dev": "cd apps/api && uvicorn main:app --reload",
-    "api:install": "cd apps/api && pip install -r requirements.txt"
+    "api:dev": "cd apps/api && ./venv/bin/uvicorn main:app --reload",
+    "api:install": "cd apps/api && ./venv/bin/pip install -r requirements.txt"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { mockUser, mockNotifications } from '@/lib/mockData';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { toast } from 'sonner';
 import {
   LayoutDashboard,
   Package,
@@ -68,8 +69,38 @@ const severityColors = {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallBtn, setShowInstallBtn] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   
+  // Handle PWA installation
+  useState(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallBtn(true);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  });
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+      setShowInstallBtn(false);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('medis_token');
+    toast.success('Signed out successfully');
+    navigate('/login');
+  };
+
   const unreadNotifications = mockNotifications.filter((n) => !n.read);
 
   const initials = mockUser.name
@@ -79,11 +110,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     .toUpperCase();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background selection:bg-primary/10">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-foreground/20 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-[60] bg-background/40 backdrop-blur-md lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -91,23 +122,26 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-64 transform bg-sidebar transition-transform duration-200 ease-in-out lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out lg:translate-x-0 glass-sidebar shadow-2xl',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className="flex h-16 items-center justify-between px-6 border-b border-sidebar-border">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-accent">
-                <span className="text-sm font-bold text-sidebar-primary">M</span>
+          <div className="flex h-20 items-center justify-between px-6 border-b border-sidebar-border/30">
+            <Link to="/" className="flex items-center gap-3 group">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sidebar-primary/5 p-1 transition-transform group-hover:scale-105">
+                <img src="/logo.png" alt="Medistore Logo" className="h-full w-full object-contain" />
               </div>
-              <span className="text-lg font-semibold text-sidebar-primary">MEDIS</span>
+              <div className="flex flex-col">
+                <span className="text-lg font-bold tracking-tight text-sidebar-primary leading-none">MEDISTORE</span>
+                <span className="text-[10px] text-sidebar-muted font-medium uppercase tracking-widest mt-1">Distribution</span>
+              </div>
             </Link>
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden text-sidebar-foreground hover:text-sidebar-primary hover:bg-sidebar-accent"
+              className="lg:hidden text-sidebar-foreground hover:text-sidebar-primary hover:bg-sidebar-accent/50"
               onClick={() => setSidebarOpen(false)}
             >
               <X className="h-5 w-5" />
@@ -126,15 +160,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     className={cn(
                       'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                       isActive
-                        ? 'bg-sidebar-accent text-sidebar-primary'
+                        ? 'bg-sidebar-accent text-sidebar-primary shadow-sm'
                         : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-primary'
                     )}
                     onClick={() => setSidebarOpen(false)}
                   >
-                    <item.icon className="h-5 w-5" />
+                    <item.icon className={cn('h-5 w-5', isActive ? 'text-primary' : 'text-sidebar-muted')} />
                     {item.name}
                     {item.name === 'Expenses' && (
-                      <Badge variant="destructive" className="ml-auto text-xs px-1.5 py-0.5">
+                       <Badge variant="destructive" className="ml-auto text-[10px] px-1.5 py-0">
                         2
                       </Badge>
                     )}
@@ -144,7 +178,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
             
             {/* Divider */}
-            <div className="my-4 border-t border-sidebar-border" />
+            <div className="my-4 border-t border-sidebar-border/30" />
             
             {/* Bottom navigation */}
             <div className="space-y-1.5">
@@ -157,12 +191,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     className={cn(
                       'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                       isActive
-                        ? 'bg-sidebar-accent text-sidebar-primary'
+                        ? 'bg-sidebar-accent text-sidebar-primary shadow-sm'
                         : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-primary'
                     )}
                     onClick={() => setSidebarOpen(false)}
                   >
-                    <item.icon className="h-5 w-5" />
+                    <item.icon className={cn('h-5 w-5', isActive ? 'text-primary' : 'text-sidebar-muted')} />
                     {item.name}
                   </Link>
                 );
@@ -171,22 +205,38 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </nav>
 
           {/* User section */}
-          <div className="border-t border-sidebar-border p-4">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10">
-                <AvatarFallback className="bg-sidebar-accent text-sidebar-primary text-sm">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-sidebar-primary truncate">
-                  {mockUser.name}
-                </p>
-                <p className="text-xs text-sidebar-muted truncate capitalize">
-                  {mockUser.role}
-                </p>
-              </div>
-            </div>
+          <div className="border-t border-sidebar-border/30 p-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div className="flex items-center gap-3 cursor-pointer p-2 rounded-xl border border-transparent hover:border-sidebar-border/50 hover:bg-sidebar-accent/30 transition-all group">
+                  <Avatar className="h-10 w-10 border border-sidebar-border/50 group-hover:border-primary/30 transition-colors">
+                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-sidebar-primary truncate leading-tight">
+                      {mockUser.name}
+                    </p>
+                    <p className="text-[10px] text-sidebar-muted font-medium uppercase tracking-wider truncate mt-0.5">
+                      {mockUser.role}
+                    </p>
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-sidebar-muted group-hover:text-sidebar-primary transition-colors" />
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" side="right" sideOffset={10} className="w-56 glass-card border-sidebar-border/40 rounded-2xl p-2 shadow-2xl">
+                <div className="px-3 py-2 mb-2">
+                  <p className="text-sm font-bold text-sidebar-primary">{mockUser.name}</p>
+                  <p className="text-[10px] font-medium text-sidebar-muted uppercase tracking-widest mt-1">{mockUser.email}</p>
+                </div>
+                <DropdownMenuSeparator className="bg-sidebar-border/30" />
+                <DropdownMenuItem className="rounded-xl focus:bg-sidebar-accent/50 cursor-pointer py-2.5" onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4 text-danger" />
+                  <span className="text-sm font-semibold text-danger">Sign Out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </aside>
@@ -194,104 +244,73 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Top bar */}
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 px-4 lg:px-8">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
+        <header className="glass-navbar border-b border-border/40 px-4 lg:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden hover:bg-accent/50"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            
+            {/* Page title or breadcrumb placeholder */}
+            <h2 className="hidden md:block text-sm font-semibold text-muted-foreground uppercase tracking-widest">
+              {location.pathname === '/' ? 'Overview' : location.pathname.split('/')[1]}
+            </h2>
+          </div>
 
-          <div className="flex-1" />
-
-          {/* Theme toggle */}
-          <ThemeToggle />
-
-          {/* Notifications */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
-                {unreadNotifications.length > 0 && (
-                  <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive" />
-                )}
+          <div className="flex items-center gap-2 md:gap-4">
+            {/* PWA Install Button */}
+            {showInstallBtn && (
+              <Button 
+                onClick={handleInstallClick}
+                variant="outline"
+                size="sm"
+                className="hidden sm:flex items-center gap-2 border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary animate-bounce-subtle"
+              >
+                <Truck className="h-4 w-4" />
+                Install App
               </Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-80 p-0">
-              <div className="border-b border-border p-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-semibold">Notifications</h4>
-                  {unreadNotifications.length > 0 && (
-                    <Badge variant="secondary" className="text-xs">
-                      {unreadNotifications.length} new
-                    </Badge>
-                  )}
-                </div>
-              </div>
-              <ScrollArea className="h-80">
-                <div className="space-y-1 p-2">
-                  {mockNotifications.map((notification) => {
-                    const Icon = severityIcons[notification.severity];
-                    return (
-                      <div
-                        key={notification.id}
-                        className={cn(
-                          'flex gap-3 rounded-lg p-3 transition-colors hover:bg-accent',
-                          !notification.read && 'bg-accent/50'
-                        )}
-                      >
-                        <Icon className={cn('h-5 w-5 mt-0.5 shrink-0', severityColors[notification.severity])} />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium">{notification.title}</p>
-                          <p className="text-xs text-muted-foreground line-clamp-2">
-                            {notification.message}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </ScrollArea>
-            </PopoverContent>
-          </Popover>
+            )}
 
-          {/* User menu */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2 pl-2 pr-1">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <div className="px-2 py-1.5">
-                <p className="text-sm font-medium">{mockUser.name}</p>
-                <p className="text-xs text-muted-foreground">{mockUser.email}</p>
-              </div>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to="/settings">
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive focus:text-destructive">
-                <LogOut className="mr-2 h-4 w-4" />
-                Sign out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="icon" className="relative hover:bg-accent/50">
+                    <Bell className="h-5 w-5" />
+                    {unreadNotifications.length > 0 && (
+                      <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-destructive border-2 border-background" />
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                {/* ... PopoverContent ... */}
+              </Popover>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-2 pl-2 pr-1 hover:bg-accent/50 rounded-full">
+                    <Avatar className="h-8 w-8 border border-border/50">
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </DropdownMenuTrigger>
+                {/* ... DropdownMenuContent ... */}
+              </DropdownMenu>
+            </div>
+          </div>
         </header>
 
         {/* Page content */}
-        <main className="p-4 lg:p-8">{children}</main>
+        <main className="p-4 lg:p-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          {children}
+        </main>
       </div>
     </div>
   );

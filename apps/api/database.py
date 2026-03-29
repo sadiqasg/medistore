@@ -4,7 +4,7 @@ from sqlmodel import create_engine, SQLModel, Session
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/medistore")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:sas@localhost:5432/medistore")
 
 engine = create_engine(DATABASE_URL, echo=True)
 
