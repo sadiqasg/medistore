@@ -9,7 +9,7 @@ from typing import List, Optional
 from datetime import datetime
 import os
 
-from database import create_db_and_tables, get_session
+from database import engine, create_db_and_tables, get_session
 from models import (
     Product, Customer, Order, OrderItem, Supply, Expense, 
     OrderCreate, User, Token, UserRead, PasswordReset, 
@@ -63,31 +63,42 @@ async def get_csrf_token(csrf_protect: CsrfProtect = Depends()):
 
 @app.on_event("startup")
 def on_startup():
-    create_db_and_tables()
-    # Seed initial admin
-    with Session(create_db_and_tables.engine if hasattr(create_db_and_tables, 'engine') else next(get_session()).bind) as session:
-        admin_email = "abulex7@yahoo.com"
-        admin = session.exec(select(User).where(User.email == admin_email)).first()
-        if not admin:
-            admin = User(
-                email=admin_email,
-                name="Abu Nabeelah",
-                hashed_password=get_password_hash("admin01"),
-                role="admin"
-            )
-            session.add(admin)
+    print("API Starting up...")
+    try:
+        create_db_and_tables()
+        print("Database tables verified/created.")
         
-        # Seed default settings
-        settings = session.exec(select(Settings)).first()
-        if not settings:
-            settings = Settings(
-                company_name="Medistore",
-                max_debt_per_customer=50000.0,
-                logo_url="/logo.png"
-            )
-            session.add(settings)
+        with Session(engine) as session:
+            # Seed initial admin
+            admin_email = "abulex7@yahoo.com"
+            admin = session.exec(select(User).where(User.email == admin_email)).first()
+            if not admin:
+                admin = User(
+                    email=admin_email,
+                    name="Abu Nabeelah",
+                    hashed_password=get_password_hash("admin01"),
+                    role="admin"
+                )
+                session.add(admin)
+                print(f"Admin user seeded: {admin_email}")
             
-        session.commit()
+            # Seed default settings
+            settings = session.exec(select(Settings)).first()
+            if not settings:
+                settings = Settings(
+                    company_name="Medistore",
+                    max_debt_per_customer=50000.0,
+                    logo_url="/logo.png"
+                )
+                session.add(settings)
+                print("Default settings seeded.")
+                
+            session.commit()
+            print("Startup seeding complete.")
+    except Exception as e:
+        print(f"ERROR during startup: {str(e)}")
+        # We don't re-raise here to allow the app to start even if DB is briefly down,
+        # otherwise Render will loop the restart.
 
 @app.get("/")
 def read_root():
