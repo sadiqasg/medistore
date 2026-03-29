@@ -156,7 +156,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex h-20 items-center justify-between px-6 border-b border-sidebar-border/30">
             <Link to="/" className="flex items-center gap-3 group">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sidebar-primary/5 p-1 transition-transform group-hover:scale-105">
-                <img src={settings?.logo_url || "/logo.png"} alt="Medistore Logo" className="h-full w-full object-contain" />
+                <img src={settings?.logo_url || "/logo.svg"} alt="Medistore Logo" className="h-full w-full object-contain" />
               </div>
               <div className="flex flex-col">
                 <span className="text-lg font-bold tracking-tight text-sidebar-primary leading-none">

@@ -55,7 +55,7 @@ export default function Login() {
           <div className="relative z-10 space-y-8">
             <div className="flex flex-col items-center gap-6">
               <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/5 p-2 shadow-xl shadow-primary/5 transition-transform group-hover:scale-110">
-                <img src="/logo.png" alt="Medistore Logo" className="h-full w-full object-contain" />
+                <img src="/logo.svg" alt="Medistore Logo" className="h-full w-full object-contain" />
               </div>
               <div className="text-center space-y-1">
                 <h1 className="text-3xl font-bold tracking-tight text-foreground uppercase">MEDISTORE</h1>
