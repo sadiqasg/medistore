@@ -21,7 +21,10 @@ from fastapi.security import OAuth2PasswordRequestForm
 app = FastAPI(title="Medistore API")
 
 # --- CORS Configuration ---
-origins = os.getenv("CORS_ORIGINS", "http://localhost:8080").split(",")
+# Origins can be a comma-separated list in CORS_ORIGINS env var
+cors_origins_env = os.getenv("CORS_ORIGINS", "http://localhost:8080")
+origins = [o.strip() for o in cors_origins_env.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -60,13 +63,11 @@ async def get_csrf_token(csrf_protect: CsrfProtect = Depends()):
     response = JSONResponse(content={"csrf_token": token})
     csrf_protect.set_csrf_cookie(signed_token, response)
     return response
-
 @app.on_event("startup")
 def on_startup():
     print("API Starting up...")
     try:
         create_db_and_tables()
-        print("Database tables verified/created.")
         
         with Session(engine) as session:
             # Seed initial admin
@@ -88,7 +89,7 @@ def on_startup():
                 settings = Settings(
                     company_name="Medistore",
                     max_debt_per_customer=50000.0,
-                    logo_url="/logo.png"
+                    logo_url="/logo.svg"
                 )
                 session.add(settings)
                 print("Default settings seeded.")

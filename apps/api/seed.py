@@ -43,7 +43,7 @@ def seed_data():
             settings = Settings(
                 company_name="MEDIS Store",
                 max_debt_per_customer=50000.0,
-                logo_url="/logo.png"
+                logo_url="/logo.svg"
             )
             session.add(settings)
             print("Default settings created")

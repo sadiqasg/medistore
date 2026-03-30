@@ -38,7 +38,7 @@ export function LoadingScreen({ onComplete, minDuration = 1500 }: LoadingScreenP
         {/* Logo */}
         <div className="relative group">
           <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/5 p-2 shadow-2xl shadow-primary/10 transition-transform group-hover:scale-110">
-            <img src="/logo.png" alt="Medistore Logo" className="h-full w-full object-contain animate-pulse-subtle" />
+            <img src="/logo.svg" alt="Medistore Logo" className="h-full w-full object-contain animate-pulse-subtle" />
           </div>
           {/* Decorative ring */}
           <div className="absolute inset-0 rounded-2xl border-2 border-primary/20 animate-ping opacity-20" />
